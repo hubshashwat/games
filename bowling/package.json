@@ -1,0 +1,29 @@
+{
+  "name": "bowling",
+  "version": "1.0.0",
+  "description": "Realistic hubshashwat Bowling Game",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/bowling.test.js"
+  },
+  "keywords": [
+    "bowling",
+    "hubshashwat",
+    "physics",
+    "game"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "canvas-confetti": "^1.9.4",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.10.0",
+    "vite": "^8.2.2"
+  }
+}

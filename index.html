@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>hubshashwat • Games</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%2300f0ff'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='%230b0c13' font-weight='bold'%3E🎳%3C/text%3E%3C/svg%3E">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: rgba(22, 25, 38, 0.85);
+      --border: rgba(255, 255, 255, 0.1);
+      --neon-blue: #00f0ff;
+      --neon-pink: #ff0077;
+      --accent-gold: #ffb703;
+      --text: #f0f3fa;
+      --text-muted: #8a92b2;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: radial-gradient(circle at 50% 20%, #151828 0%, var(--bg) 80%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      text-align: center;
+    }
+    .container {
+      max-width: 680px;
+      width: 100%;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--neon-blue);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--neon-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 36px;
+    }
+    .games-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+    }
+    .game-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      backdrop-filter: blur(16px);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .game-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--neon-blue);
+      box-shadow: 0 12px 36px rgba(0, 240, 255, 0.2);
+    }
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .card-icon {
+      font-size: 2.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-info h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .card-info .tagline {
+      font-size: 0.85rem;
+      color: var(--neon-pink);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      color: #c0c6de;
+    }
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #00f0ff, #0077ff);
+      color: #0b0c13;
+      font-weight: 800;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 240, 255, 0.35);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .play-btn:hover {
+      opacity: 0.95;
+      transform: scale(1.01);
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.82rem;
+      color: #636b8a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">HUBSHASHWAT ARCADE</div>
+    <h1>Game Collection</h1>
+    <p class="subtitle">High performance browser games with realistic 3D physics</p>
+
+    <div class="games-grid">
+      <a href="./bowling/" class="game-card">
+        <div class="card-top">
+          <div class="card-icon">🎳</div>
+          <div class="card-info">
+            <h2>Strike! 3D Bowling</h2>
+            <div class="tagline">REALISTIC 3D PHYSICS • 3 DIFFICULTY LEVELS</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Official USBC 10-frame bowling game with full pin-to-pin physics, true oil friction hook mechanics, mobile swipe controls, follow camera, sound effects, and persistent high scores.
+        </p>
+        <div class="tags">
+          <span class="tag">WebGL 3D</span>
+          <span class="tag">Cannon-es Physics</span>
+          <span class="tag">USBC Rules</span>
+          <span class="tag">Easy / Med / Hard</span>
+          <span class="tag">Mobile & Desktop</span>
+        </div>
+        <div class="play-btn">
+          PLAY BOWLING NOW &nbsp;→
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      Created by hubshashwat • Hosted on GitHub Pages
+    </footer>
+  </div>
+</body>
+</html>

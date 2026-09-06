@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b0c13">
+  <title>Realistic 3D Bowling • hubshashwat</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%2300f0ff'/%3E%3Ccircle cx='40' cy='35' r='6' fill='%230b0c13'/%3E%3Ccircle cx='60' cy='35' r='6' fill='%230b0c13'/%3E%3Ccircle cx='50' cy='60' r='6' fill='%230b0c13'/%3E%3C/svg%3E">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+      "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js",
+      "canvas-confetti": "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/+esm"
+    }
+  }
+  </script>
+  <script type="module" crossorigin src="./assets/index-B6K7csAn.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Cdn7j_v2.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 3D hubshashwat WebGL Canvas -->
+    <div id="game-canvas-container"></div>
+
+    <!-- UI Overlay Layer -->
+    <div id="ui-root">
+      <!-- Top Control Bar -->
+      <header class="top-header">
+        <div class="header-left">
+          <span class="brand-title">STRIKE! 3D</span>
+          <button id="diff-badge-btn" class="badge badge-medium clickable">LVL: MEDIUM</button>
+        </div>
+
+        <div class="header-right">
+          <button id="ball-btn" class="icon-btn clickable" title="Choose Bowling Ball">🎳 BALL</button>
+          <button id="stats-btn" class="icon-btn clickable" title="High Scores & Stats">🏆 SCORES</button>
+          <button id="help-btn" class="icon-btn clickable" title="How to Play">❓ HELP</button>
+          <button id="sound-btn" class="icon-btn clickable" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+          <button id="fullscreen-btn" class="icon-btn clickable" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">⛶</button>
+        </div>
+      </header>
+
+      <!-- 10-Frame Bowling Scoreboard Monitor -->
+      <div class="scoreboard-monitor">
+        <div class="scoreboard-table">
+          <div id="scoreboard-frames" style="display: contents;">
+            <!-- Rendered dynamically by UIOverlay -->
+          </div>
+          <div class="score-summary-cell">
+            <span class="label">SCORE</span>
+            <span class="total-val" id="current-total-score">0</span>
+            <span style="font-size: 0.6rem; color: var(--text-muted); margin-top: 2px;">BEST: <span id="max-possible-score" style="color: var(--accent-gold);">0</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- HUD Mini-Widgets -->
+      <div class="hud-widgets">
+        <!-- Overhead 10-Pin Mini-HUD -->
+        <div class="pin-deck-card clickable">
+          <div class="pin-deck-title">PIN DECK</div>
+          <div id="pin-deck-hud" class="pin-deck-hud">
+            <!-- Pin dots rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Readout Card -->
+        <div class="readout-card clickable">
+          <div class="readout-item">
+            <span class="readout-label">STATUS</span>
+            <span class="readout-val" id="status-message" style="color: #ffffff;">Frame 1 • Roll 1</span>
+          </div>
+          <div class="readout-item">
+            <span class="readout-label">SPEED</span>
+            <span class="readout-val" id="speed-display">0.0 MPH</span>
+          </div>
+          <div class="readout-item">
+            <span class="readout-label">HOOK SPIN</span>
+            <span class="readout-val" id="spin-display">0 RPM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Announcement Banner (Strike, Spare, Split, etc.) -->
+      <div id="announcement-banner" class="announcement-banner">STRIKE!</div>
+
+      <!-- Bottom Bowler Controls Bar -->
+      <div class="bottom-controls-bar">
+        <div class="swipe-hint-container">
+          <div class="swipe-hint">
+            <span class="pulse-arrow">▲</span> Swipe Up To Bowl • Drag To Aim
+          </div>
+          <div style="font-size: 0.72rem; color: var(--accent-gold);">
+            Precision Mode:
+          </div>
+        </div>
+
+        <div class="controls-grid">
+          <!-- Position / Stance Slider -->
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>STANCE</span>
+              <span class="highlight">◀ LEFT | RIGHT ▶</span>
+            </div>
+            <input type="range" id="position-slider" min="-1" max="1" step="0.02" value="0" aria-label="Bowler stance position">
+          </div>
+
+          <!-- Spin / Hook Curve Slider -->
+          <div class="slider-group">
+            <div class="slider-label">
+              <span>HOOK SPIN</span>
+              <span class="highlight" id="spin-value-label">0 (Straight)</span>
+            </div>
+            <input type="range" id="spin-slider" min="-350" max="350" step="10" value="0" aria-label="Hook spin amount">
+          </div>
+
+          <!-- Bowl Action Button -->
+          <button id="bowl-btn" class="bowl-btn clickable">ROLL BALL</button>
+        </div>
+
+        <div class="keyboard-hints">
+          Desktop shortcuts: <b>[← / → / A / D]</b> Position • <b>[Q / E]</b> Spin • <b>[Space / Enter]</b> Roll
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- 1. Difficulty Modal -->
+    <div id="diff-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Difficulty</h2>
+          <button class="modal-close-btn">&times;</button>
+        </div>
+        <div class="diff-select-list">
+          <div class="diff-select-card" data-diff="easy">
+            <div class="diff-card-title">
+              <span style="color: #06d6a0;">EASY (Recreational)</span>
+              <span class="badge badge-easy">BUMPERS ON</span>
+            </div>
+            <div class="diff-card-desc">
+              Automatic bumper rails active (no gutters!), full green trajectory assist line, forgiving pocket tolerance, and energetic pin scatter. Great for beginners!
+            </div>
+          </div>
+
+          <div class="diff-select-card active" data-diff="medium">
+            <div class="diff-card-title">
+              <span style="color: #00f0ff;">MEDIUM (League Standard)</span>
+              <span class="badge badge-medium">HOUSE PATTERN</span>
+            </div>
+            <div class="diff-card-desc">
+              Standard open gutters, short targeting arrow guide (15 ft), authentic USBC House oil pattern (heavy center oil, dry backends for natural hook action), and standard pin carry.
+            </div>
+          </div>
+
+          <div class="diff-select-card" data-diff="hard">
+            <div class="diff-card-title">
+              <span style="color: #ff0077;">HARD (PBA Sport Tour)</span>
+              <span class="badge badge-hard">PRO PATTERN</span>
+            </div>
+            <div class="diff-card-desc">
+              Flat 3:1 sport oil pattern, NO aim guide (spot-bowling only), sensitive friction transitions. Missing pocket by half a board leaves tough splits like 7-10 or 4-6-7-10!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Ball Customizer Modal -->
+    <div id="ball-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Select Bowling Ball</h2>
+          <button class="modal-close-btn">&times;</button>
+        </div>
+        <div id="ball-list-container" class="ball-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Stats & Leaderboard Modal -->
+    <div id="stats-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>High Scores & Statistics</h2>
+          <button class="modal-close-btn">&times;</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">EASY HIGH</div>
+            <div class="stat-value" id="stat-high-easy" style="color: #06d6a0;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">MEDIUM HIGH</div>
+            <div class="stat-value" id="stat-high-medium" style="color: #00f0ff;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">HARD HIGH</div>
+            <div class="stat-value" id="stat-high-hard" style="color: #ff0077;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">GAMES PLAYED</div>
+            <div class="stat-value" id="stat-games-played">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">OVERALL BEST</div>
+            <div class="stat-value" id="stat-best-overall" style="color: var(--accent-gold);">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">AVERAGE SCORE</div>
+            <div class="stat-value" id="stat-average">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">TOTAL STRIKES</div>
+            <div class="stat-value" id="stat-total-strikes" style="color: #ff0077;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">TOTAL SPARES</div>
+            <div class="stat-value" id="stat-total-spares" style="color: #00f0ff;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">STORAGE</div>
+            <div class="stat-value" style="font-size: 0.85rem; color: #06d6a0;">LOCAL / COOKIE</div>
+          </div>
+        </div>
+
+        <div class="history-container">
+          <div style="font-size: 0.85rem; font-weight: 800; margin-bottom: 6px;">Recent Match History:</div>
+          <div id="match-history-list"></div>
+        </div>
+
+        <button id="clear-stats-btn" class="action-btn-danger">Clear All Saved Stats</button>
+      </div>
+    </div>
+
+    <!-- 4. How To Play Modal -->
+    <div id="help-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>How To Play</h2>
+          <button class="modal-close-btn">&times;</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem; line-height: 1.5; color: #d0d5e8;">
+          <p><b>📱 Touch / Mobile / Tablet:</b><br>
+          • <b>Stance:</b> Drag horizontally on the bottom approach or use the Stance slider.<br>
+          • <b>Throw:</b> Swipe up quickly towards the pins! The flick speed controls your ball velocity, and swipe angle controls direction.<br>
+          • <b>Curve / Hook:</b> Adjust the <b>Hook Spin</b> slider to add left or right rotation for a pro curve into the 1-3 pocket!</p>
+
+          <p><b>💻 Laptop / Desktop:</b><br>
+          • <b>Mouse:</b> Click and flick forward, or click <b>ROLL BALL</b>.<br>
+          • <b>Keyboard:</b> Use <b>[← / →]</b> or <b>[A / D]</b> to position stance, <b>[Q / E]</b> to set hook spin, and <b>[Spacebar]</b> to roll!</p>
+
+          <p><b>🎳 Pro Bowling Tip:</b><br>
+          For a strike, don't hit the headpin head-on! Curve the ball into the "pocket" between the 1-pin and 3-pin (for right-handers) at a 4° to 6° entry angle to trigger a domino chain reaction.</p>
+
+          <p><b>⭐ Scoring:</b><br>
+          Standard USBC 10-frame rules. Strikes earn 10 + next 2 rolls. Spares earn 10 + next 1 roll. A perfect game is 300 points (12 consecutive strikes!).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+      <div class="modal-content game-over-content">
+        <div class="game-over-title">GAME COMPLETE!</div>
+        <div id="new-record-banner" class="new-record-badge" style="display: none;">🏆 NEW HIGH SCORE! 🏆</div>
+
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;">FINAL SCORE</div>
+        <div id="game-over-final-score" class="final-score-display">0</div>
+
+        <div class="stats-grid" style="width: 100%; margin: 10px 0;">
+          <div class="stat-box">
+            <div class="stat-label">DIFFICULTY</div>
+            <div class="stat-value" id="game-over-level" style="font-size: 0.95rem;">MEDIUM</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">STRIKES</div>
+            <div class="stat-value" id="game-over-strikes" style="color: #ff0077;">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">SPARES</div>
+            <div class="stat-value" id="game-over-spares" style="color: #00f0ff;">0</div>
+          </div>
+          <div class="stat-box" style="grid-column: 1 / -1;">
+            <div class="stat-label">LEVEL HIGH SCORE</div>
+            <div class="stat-value" id="game-over-high" style="color: var(--accent-gold);">0</div>
+          </div>
+        </div>
+
+        <button id="game-over-restart-btn" class="restart-btn clickable">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
