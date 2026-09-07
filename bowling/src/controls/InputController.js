@@ -18,7 +18,7 @@ export class InputController {
     this.startX = 0;       // -0.42 to +0.42 meters
     this.aimAngle = 0;     // -0.12 to +0.12 radians
     this.spinRpm = 0;      // -350 to +350 rpm (+ = hook right, - = hook left)
-    this.speed = 9.2;      // m/s
+    this.speed = 7.6;      // m/s (~17.0 MPH regulation USBC strike speed)
 
     // Gesture tracking state
     this.isDragging = false;
@@ -145,8 +145,8 @@ export class InputController {
     const distancePx = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const speedPxPerMs = distancePx / Math.max(40, dtMs);
 
-    // Map swipe speed to physical bowling speed (6.5 to 12.5 m/s, ~15-28 mph)
-    const normalizedSpeed = Math.min(1.0, Math.max(0.1, (speedPxPerMs - 0.4) / 2.2));
+    // Map swipe speed to physical bowling speed (~13 to 21 mph)
+    const normalizedSpeed = Math.min(1.0, Math.max(0.1, (speedPxPerMs - 0.35) / 1.9));
     const finalSpeed = cfg.minVelocity + normalizedSpeed * (cfg.maxVelocity - cfg.minVelocity);
 
     // Angle calculation:

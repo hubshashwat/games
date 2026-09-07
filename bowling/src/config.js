@@ -65,8 +65,8 @@ export const DIFFICULTY_SETTINGS = {
     hookMultiplier: 1.25,
     oilPattern: 'recreational',
     pocketTolerance: 0.12,       // Forgiving pocket hit radius
-    minVelocity: 7.0,
-    maxVelocity: 12.0
+    minVelocity: 6.5,            // ~14.5 MPH
+    maxVelocity: 8.8             // ~19.7 MPH
   },
   medium: {
     name: 'Medium',
@@ -77,8 +77,8 @@ export const DIFFICULTY_SETTINGS = {
     hookMultiplier: 1.0,
     oilPattern: 'house',
     pocketTolerance: 0.07,
-    minVelocity: 6.5,
-    maxVelocity: 12.5
+    minVelocity: 6.2,            // ~13.9 MPH
+    maxVelocity: 9.0             // ~20.1 MPH
   },
   hard: {
     name: 'Hard',
@@ -89,8 +89,8 @@ export const DIFFICULTY_SETTINGS = {
     hookMultiplier: 0.85,
     oilPattern: 'sport',
     pocketTolerance: 0.038,
-    minVelocity: 6.0,
-    maxVelocity: 13.0
+    minVelocity: 5.8,            // ~13.0 MPH
+    maxVelocity: 9.4             // ~21.0 MPH
   }
 };
 

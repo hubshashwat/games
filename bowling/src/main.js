@@ -160,7 +160,7 @@ class BowlingGame {
   triggerManualBowl() {
     if (this.state !== STATE.AIMING) return;
     const cfg = DIFFICULTY_SETTINGS[this.difficulty];
-    const speed = (cfg.minVelocity + cfg.maxVelocity) * 0.52;
+    const speed = (cfg.minVelocity + cfg.maxVelocity) * 0.50;
     this.input.executeLaunch(this.input.startX, this.input.aimAngle, speed, this.input.spinRpm);
   }
 
@@ -197,18 +197,18 @@ class BowlingGame {
 
     // 2. If ball went into gutter and reached back of pit
     if (this.physics.ballInGutter) {
-      if (bp.z < -(DIMENSIONS.LANE_LENGTH + DIMENSIONS.PIN_DECK_LENGTH) || elapsedSec > 3.0) {
+      if (bp.z < -(DIMENSIONS.LANE_LENGTH + DIMENSIONS.PIN_DECK_LENGTH) || elapsedSec > 3.8) {
         return true;
       }
     }
 
     // 3. Ball went completely past pin deck into back pit without hitting pins
     if (bp.z < -(DIMENSIONS.LANE_LENGTH + DIMENSIONS.PIN_DECK_LENGTH + 0.3)) {
-      return elapsedSec > 2.6;
+      return elapsedSec > 3.0;
     }
 
     // 4. Fallback simulation safety timeout: allows full travel even under slow frame rates
-    return elapsedSec > 5.0;
+    return elapsedSec > 5.5;
   }
 
   evaluateRoll() {
