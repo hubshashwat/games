@@ -212,10 +212,6 @@ export class GameEngine {
       return this.audioManager.toggleMute();
     };
 
-    this.uiManager.onToggleCamera = (viewKey) => {
-      this.sceneManager.setCameraView(viewKey);
-    };
-
     this.uiManager.onChangeQuality = (quality) => {
       this.sceneManager.setQuality(quality);
     };

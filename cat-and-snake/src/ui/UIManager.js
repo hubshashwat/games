@@ -62,7 +62,6 @@ export class UIManager {
 
           <!-- Top-Right Actions -->
           <div class="hud-actions">
-            <button id="btn-camera-toggle" class="hud-icon-btn" aria-label="Toggle Camera View" title="Change Camera View">🎥</button>
             <button id="btn-audio-toggle" class="hud-icon-btn" aria-label="Toggle Sound" title="Sound Mute/Unmute">🔊</button>
             <button id="btn-pause" class="hud-icon-btn" aria-label="Pause Game" title="Pause Game">⏸️</button>
           </div>
@@ -161,14 +160,7 @@ export class UIManager {
               <span class="setting-title">Audio FX & Music</span>
               <button id="setting-audio-toggle" class="setting-btn active">Sound ON</button>
             </div>
-            <div class="setting-row">
-              <span class="setting-title">Camera Perspective</span>
-              <div class="setting-btn-group" id="camera-settings-group">
-                <button class="setting-btn active" data-view="cinematic">Cinematic</button>
-                <button class="setting-btn" data-view="close">Close</button>
-                <button class="setting-btn" data-view="behind_snake">Serpent Cam</button>
-              </div>
-            </div>
+
             <div class="setting-row">
               <span class="setting-title">Graphics Quality</span>
               <div class="setting-btn-group" id="quality-settings-group">
@@ -325,24 +317,7 @@ export class UIManager {
     document.getElementById('btn-audio-toggle').addEventListener('click', toggleAudioHandler);
     document.getElementById('setting-audio-toggle').addEventListener('click', toggleAudioHandler);
 
-    // Camera Toggle
-    document.getElementById('btn-camera-toggle').addEventListener('click', () => {
-      const views = [CAMERA_VIEWS.CINEMATIC, CAMERA_VIEWS.CLOSE, CAMERA_VIEWS.BEHIND_SNAKE];
-      const nextIdx = (views.indexOf(this.currentCameraView) + 1) % views.length;
-      this.currentCameraView = views[nextIdx];
-      if (this.onToggleCamera) this.onToggleCamera(this.currentCameraView);
-    });
 
-    // Camera Setting buttons in Pause
-    const camBtns = document.querySelectorAll('#camera-settings-group .setting-btn');
-    camBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        camBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.currentCameraView = btn.dataset.view;
-        if (this.onToggleCamera) this.onToggleCamera(this.currentCameraView);
-      });
-    });
 
     // Quality Setting buttons in Pause
     const qualBtns = document.querySelectorAll('#quality-settings-group .setting-btn');

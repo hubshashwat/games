@@ -435,20 +435,144 @@ export class EnvironmentAssets {
   }
 
   /**
-   * Tropical Fern / Monstera Bush
+   * Giant Ancient Canopy Arch Tree (Branches stretch across track to form an overhead rainforest tunnel)
+   */
+  createCanopyArchTree(height = 18, radius = 1.6, isLeft = true) {
+    const group = new THREE.Group();
+
+    // 1. Massive trunk
+    const trunkGeo = new THREE.CylinderGeometry(radius * 0.65, radius, height, 16);
+    const trunk = new THREE.Mesh(trunkGeo, this.materials.bark);
+    trunk.position.y = height / 2;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    group.add(trunk);
+
+    // 2. Buttress Roots
+    for (let r = 0; r < 4; r++) {
+      const angle = (r / 4) * Math.PI * 2 + 0.3;
+      const rootGeo = new THREE.ConeGeometry(0.45, height * 0.28, 5);
+      rootGeo.rotateX(Math.PI / 6);
+      const root = new THREE.Mesh(rootGeo, this.materials.bark);
+      root.position.set(Math.cos(angle) * (radius * 0.9), height * 0.12, Math.sin(angle) * (radius * 0.9));
+      root.rotation.y = -angle;
+      root.castShadow = true;
+      group.add(root);
+    }
+
+    // 3. Massive Overarching Branch stretching ACROSS the path
+    const archBranchGroup = new THREE.Group();
+    archBranchGroup.position.set(0, height * 0.72, 0);
+
+    const dir = isLeft ? 1 : -1;
+    const branchLength = 11.5;
+    const branchGeo = new THREE.CylinderGeometry(radius * 0.22, radius * 0.45, branchLength, 12);
+    branchGeo.rotateZ(dir * (Math.PI / 3.2));
+    branchGeo.translate(dir * (branchLength * 0.38), branchLength * 0.22, 0);
+
+    const mainBranch = new THREE.Mesh(branchGeo, this.materials.bark);
+    mainBranch.castShadow = true;
+    archBranchGroup.add(mainBranch);
+
+    // Canopy foliage masses along the arch
+    for (let f = 0; f < 3; f++) {
+      const foliageGeo = new THREE.SphereGeometry(2.8 + Math.random() * 1.2, 12, 8);
+      foliageGeo.scale(1.4, 0.65, 1.4);
+      const foliage = new THREE.Mesh(foliageGeo, this.materials.leaves);
+      foliage.position.set(
+        dir * (3.5 + f * 2.8),
+        3.8 + f * 1.2,
+        (Math.random() - 0.5) * 2.0
+      );
+      foliage.castShadow = true;
+      archBranchGroup.add(foliage);
+    }
+
+    // Hanging lianas dangling over the track
+    for (let v = 0; v < 3; v++) {
+      const vLen = 6.0 + Math.random() * 4.0;
+      const vGeo = new THREE.CylinderGeometry(0.04, 0.05, vLen, 5);
+      const vine = new THREE.Mesh(vGeo, this.materials.bark);
+      vine.position.set(
+        dir * (4.0 + v * 2.4),
+        3.5 - vLen / 2,
+        (Math.random() - 0.5) * 1.5
+      );
+      vine.castShadow = true;
+      archBranchGroup.add(vine);
+    }
+
+    group.add(archBranchGroup);
+    return group;
+  }
+
+  /**
+   * Tropical Giant Monstera / Broadleaf Plant
+   */
+  createMonsteraBush() {
+    const group = new THREE.Group();
+    const numLeaves = 6;
+    for (let i = 0; i < numLeaves; i++) {
+      const leafAngle = (i / numLeaves) * Math.PI * 2 + Math.random() * 0.3;
+      const leafGeo = new THREE.PlaneGeometry(1.2, 2.0, 4, 6);
+      leafGeo.translate(0, 1.0, 0);
+      const leaf = new THREE.Mesh(leafGeo, this.materials.leaves);
+      leaf.rotation.y = leafAngle;
+      leaf.rotation.x = 0.55 + Math.random() * 0.25;
+      leaf.rotation.z = (Math.random() - 0.5) * 0.2;
+      leaf.castShadow = true;
+      group.add(leaf);
+    }
+    return group;
+  }
+
+  /**
+   * Tropical Fan Palm Tree
+   */
+  createFanPalm(height = 8.5) {
+    const group = new THREE.Group();
+
+    // Curved slender trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.22, 0.34, height, 10);
+    const trunk = new THREE.Mesh(trunkGeo, this.materials.bark);
+    trunk.position.y = height / 2;
+    trunk.castShadow = true;
+    group.add(trunk);
+
+    // Crown of fan leaves
+    const crownGroup = new THREE.Group();
+    crownGroup.position.y = height;
+    const numFronds = 10;
+    for (let f = 0; f < numFronds; f++) {
+      const angle = (f / numFronds) * Math.PI * 2;
+      const frondGeo = new THREE.ConeGeometry(0.85, 2.4, 5);
+      frondGeo.scale(1.2, 0.1, 1.0);
+      frondGeo.translate(0, 1.2, 0);
+      const frond = new THREE.Mesh(frondGeo, this.materials.leaves);
+      frond.rotation.y = angle;
+      frond.rotation.x = 0.75 + Math.random() * 0.15;
+      frond.castShadow = true;
+      crownGroup.add(frond);
+    }
+    group.add(crownGroup);
+    return group;
+  }
+
+  /**
+   * Tropical Fern Bush with Realistic Botanical Veined Fronds
    */
   createFernCluster() {
     const group = new THREE.Group();
-    const numFronds = 8;
+    const numFronds = 9;
 
     for (let i = 0; i < numFronds; i++) {
       const angle = (i / numFronds) * Math.PI * 2 + Math.random() * 0.25;
-      const frondGeo = new THREE.ConeGeometry(0.32, 1.7, 5);
-      frondGeo.scale(1.0, 1.0, 0.1); // tapered leaf blade
-      frondGeo.translate(0, 0.85, 0);
+      const frondGeo = new THREE.PlaneGeometry(0.55, 2.2, 4, 8);
+      frondGeo.translate(0, 1.1, 0);
       const frond = new THREE.Mesh(frondGeo, this.materials.leaves);
       frond.rotation.y = angle;
-      frond.rotation.x = 0.65 + Math.random() * 0.2; // arch outward
+      frond.rotation.x = 0.58 + Math.random() * 0.22;
+      frond.rotation.z = (Math.random() - 0.5) * 0.25;
       frond.castShadow = true;
       group.add(frond);
     }

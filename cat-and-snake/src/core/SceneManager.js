@@ -215,9 +215,7 @@ export class SceneManager {
   }
 
   setCameraView(viewKey) {
-    if (CAMERA_VIEWS[viewKey] || Object.values(CAMERA_VIEWS).includes(viewKey)) {
-      this.cameraView = viewKey;
-    }
+    // Single locked cinematic angle where serpent and cat look best
   }
 
   triggerCameraShake(intensity = 0.4) {
@@ -225,47 +223,24 @@ export class SceneManager {
   }
 
   updateCamera(dt, catPosition, snakePosition, catSpeed) {
-    // Compute camera offset and lookAt based on active camera view
-    let targetOffset, lookAtOffset;
+    // SINGLE OPTIMAL CINEMATIC CHASE ANGLE:
+    // Positioned 1.8m behind the giant reared serpent head, elevated to perfectly frame
+    // the menacing viper head, glowing eyes, and fangs in the foreground / lower third,
+    // the galloping cat in the center, and the endless jungle track unfolding ahead.
+    const camZ = snakePosition.z - 1.8;
+    const camY = 2.45 + catPosition.y * 0.30;
+    const camX = catPosition.x * 0.35;
 
-    if (this.cameraView === CAMERA_VIEWS.CLOSE) {
-      targetOffset = new THREE.Vector3(0, 1.6, -3.2);
-      lookAtOffset = new THREE.Vector3(0, 0.7, 4.5);
-    } else if (this.cameraView === CAMERA_VIEWS.BEHIND_SNAKE) {
-      targetOffset = new THREE.Vector3(0, 2.8, -12.5);
-      lookAtOffset = new THREE.Vector3(0, 0.8, 3.0);
-    } else {
-      // Default: CINEMATIC DYNAMIC CHASE CAM
-      // Automatically frames both the lunging serpent and the galloping cat
-      const snakeHeadDist = Math.max(2.5, catPosition.z - snakePosition.z);
-      const camZ = -Math.max(7.2, snakeHeadDist + 2.2);
-      targetOffset = new THREE.Vector3(
-        catPosition.x * 0.45,
-        3.0 + catPosition.y * 0.45,
-        camZ
-      );
-      lookAtOffset = new THREE.Vector3(
-        catPosition.x * 0.55,
-        1.1 + catPosition.y * 0.4,
-        4.2
-      );
-    }
+    this.targetCameraPos.set(camX, camY, camZ);
 
-    // Target positions in world coordinates
-    this.targetCameraPos.set(
-      catPosition.x + targetOffset.x,
-      targetOffset.y,
-      catPosition.z + targetOffset.z
-    );
+    const lookX = catPosition.x * 0.45;
+    const lookY = 0.95 + catPosition.y * 0.30;
+    const lookZ = catPosition.z + 1.6;
 
-    this.targetLookAt.set(
-      catPosition.x + lookAtOffset.x,
-      lookAtOffset.y,
-      catPosition.z + lookAtOffset.z
-    );
+    this.targetLookAt.set(lookX, lookY, lookZ);
 
     // Smooth camera damping
-    const lerpSpeed = 10.0 * dt;
+    const lerpSpeed = 12.0 * dt;
     this.camera.position.lerp(this.targetCameraPos, Math.min(1.0, lerpSpeed));
     this.camera.lookAt(this.targetLookAt);
 
