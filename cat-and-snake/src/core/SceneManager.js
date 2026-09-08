@@ -13,12 +13,12 @@ export class SceneManager {
 
     // 1. Three.js Scene
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0e1c12);
-    // Humid atmospheric jungle fog
-    this.scene.fog = new THREE.FogExp2(0x102416, 0.014);
+    this.scene.background = new THREE.Color(0x0c1c13);
+    // Humid atmospheric tropical rainforest fog with natural depth falloff
+    this.scene.fog = new THREE.FogExp2(0x0c1c13, 0.0088);
 
     // 2. Camera setup
-    this.camera = new THREE.PerspectiveCamera(58, 1, 0.1, 300);
+    this.camera = new THREE.PerspectiveCamera(58, 1, 0.1, 350);
     this.cameraView = CAMERA_VIEWS.CINEMATIC;
     this.targetCameraPos = new THREE.Vector3();
     this.targetLookAt = new THREE.Vector3();
@@ -38,74 +38,157 @@ export class SceneManager {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.15;
 
     this.container.appendChild(this.renderer.domElement);
 
-    // 4. Atmospheric Jungle Lighting
+    // 4. Atmospheric Sky Dome & Backdrop
+    this.setupSkyDome();
+
+    // 5. Atmospheric Jungle Lighting
     this.setupLighting();
 
-    // 5. Volumetric Canopy God Rays
+    // 6. Volumetric Canopy God Rays
     this.setupSunbeams();
 
-    // 6. Responsive Resize Handling
+    // 7. Ground Mist Layers
+    this.setupGroundMist();
+
+    // 8. Responsive Resize Handling
     this.onResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.onResize);
     this.handleResize();
   }
 
+  setupSkyDome() {
+    // Majestic procedural sky dome with canopy gradient and golden sun aura
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, 0, 512);
+    grad.addColorStop(0.0, '#06130c'); // Deep canopy zenith
+    grad.addColorStop(0.35, '#0e2617'); // Upper rainforest foliage
+    grad.addColorStop(0.65, '#224a2d'); // Mid canopy glow
+    grad.addColorStop(0.85, '#5c522a'); // Warm golden sun break
+    grad.addColorStop(1.0, '#12281a'); // Distant humid horizon mist
+
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Add soft sun flare glow in upper atmosphere
+    const sunGrad = ctx.createRadialGradient(320, 360, 10, 320, 360, 220);
+    sunGrad.addColorStop(0, 'rgba(255, 235, 170, 0.45)');
+    sunGrad.addColorStop(0.5, 'rgba(230, 180, 80, 0.15)');
+    sunGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = sunGrad;
+    ctx.fillRect(0, 0, 512, 512);
+
+    const skyTexture = new THREE.CanvasTexture(canvas);
+    const skyGeo = new THREE.SphereGeometry(260, 24, 16);
+    const skyMat = new THREE.MeshBasicMaterial({
+      map: skyTexture,
+      side: THREE.BackSide,
+      depthWrite: false
+    });
+
+    this.skyDome = new THREE.Mesh(skyGeo, skyMat);
+    this.scene.add(this.skyDome);
+  }
+
   setupLighting() {
-    // Ambient / Hemisphere Light: Lush canopy blue-sky top with warm amber ground bounce
-    this.hemiLight = new THREE.HemisphereLight(0x7ab886, 0x2b1d11, 0.65);
+    // Ambient / Hemisphere Light: Natural rainforest canopy ambient with warm rich loam ground bounce
+    this.hemiLight = new THREE.HemisphereLight(0x769b82, 0x362114, 0.65);
     this.scene.add(this.hemiLight);
 
-    // Warm tropical sunlight penetrating canopy
-    this.sunLight = new THREE.DirectionalLight(0xfff6dd, 1.4);
-    this.sunLight.position.set(12, 28, 18);
+    // Warm golden tropical sunlight penetrating canopy
+    this.sunLight = new THREE.DirectionalLight(0xfff4dc, 2.2);
+    this.sunLight.position.set(14, 30, 20);
     this.sunLight.castShadow = true;
 
-    // Shadow map tuning for high-detail contact shadows
-    this.sunLight.shadow.mapSize.width = 1024;
-    this.sunLight.shadow.mapSize.height = 1024;
+    // Shadow map tuning for ultra-sharp contact shadows
+    this.sunLight.shadow.mapSize.width = 2048;
+    this.sunLight.shadow.mapSize.height = 2048;
     this.sunLight.shadow.camera.near = 1.0;
-    this.sunLight.shadow.camera.far = 70;
-    this.sunLight.shadow.camera.left = -12;
-    this.sunLight.shadow.camera.right = 12;
-    this.sunLight.shadow.camera.top = 25;
-    this.sunLight.shadow.camera.bottom = -15;
-    this.sunLight.shadow.bias = -0.0006;
+    this.sunLight.shadow.camera.far = 80;
+    this.sunLight.shadow.camera.left = -14;
+    this.sunLight.shadow.camera.right = 14;
+    this.sunLight.shadow.camera.top = 28;
+    this.sunLight.shadow.camera.bottom = -18;
+    this.sunLight.shadow.normalBias = 0.038;
+    this.sunLight.shadow.bias = -0.0004;
 
     this.scene.add(this.sunLight);
     this.scene.add(this.sunLight.target);
 
-    // Soft emerald backlight for jungle rim lighting
-    this.rimLight = new THREE.DirectionalLight(0x27ae60, 0.55);
-    this.rimLight.position.set(-10, 15, -15);
+    // Subtle golden-lime backlight for jungle rim lighting
+    this.rimLight = new THREE.DirectionalLight(0x8ae068, 0.55);
+    this.rimLight.position.set(-12, 18, -16);
     this.scene.add(this.rimLight);
+
+    // Dynamic character fill light tracking the cat & serpent
+    this.playerFillLight = new THREE.PointLight(0xffeedb, 1.0, 16, 1.5);
+    this.playerFillLight.position.set(0, 3, 0);
+    this.scene.add(this.playerFillLight);
   }
 
   setupSunbeams() {
-    // Volumetric sunbeam planes filtering through canopy
-    const beamGeo = new THREE.ConeGeometry(3.5, 24, 8, 1, true);
+    // Delicate volumetric sunbeams filtering softly through high branches
+    const beamGeo = new THREE.ConeGeometry(4.0, 32, 10, 1, true);
     beamGeo.rotateX(-Math.PI / 6);
-    beamGeo.rotateZ(Math.PI / 8);
+    beamGeo.rotateZ(Math.PI / 9);
 
     const beamMat = new THREE.MeshBasicMaterial({
-      color: 0xfff0b3,
+      color: 0xffecb3,
       transparent: true,
-      opacity: 0.08,
+      opacity: 0.028,
       side: THREE.DoubleSide,
       depthWrite: false,
       blending: THREE.AdditiveBlending
     });
 
     this.sunbeams = new THREE.Group();
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const beam = new THREE.Mesh(beamGeo, beamMat);
-      beam.position.set((i % 2 === 0 ? -4 : 4), 16, i * 40);
+      beam.position.set((i % 2 === 0 ? -5.5 : 5.5), 20, i * 36);
       this.sunbeams.add(beam);
     }
     this.scene.add(this.sunbeams);
+  }
+
+  setupGroundMist() {
+    // Soft atmospheric ground mist hovering right above the jungle floor
+    const mistCanvas = document.createElement('canvas');
+    mistCanvas.width = 256;
+    mistCanvas.height = 256;
+    const mCtx = mistCanvas.getContext('2d');
+    const mGrad = mCtx.createRadialGradient(128, 128, 20, 128, 128, 128);
+    mGrad.addColorStop(0, 'rgba(180, 220, 195, 0.35)');
+    mGrad.addColorStop(0.6, 'rgba(140, 180, 160, 0.15)');
+    mGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    mCtx.fillStyle = mGrad;
+    mCtx.fillRect(0, 0, 256, 256);
+
+    const mistTexture = new THREE.CanvasTexture(mistCanvas);
+    const mistGeo = new THREE.PlaneGeometry(18, 48);
+    mistGeo.rotateX(-Math.PI / 2);
+
+    const mistMat = new THREE.MeshBasicMaterial({
+      map: mistTexture,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    this.groundMist = new THREE.Group();
+    for (let i = 0; i < 3; i++) {
+      const mistPlane = new THREE.Mesh(mistGeo, mistMat);
+      mistPlane.position.set((i - 1) * 1.5, 0.22, i * 40);
+      this.groundMist.add(mistPlane);
+    }
+    this.scene.add(this.groundMist);
   }
 
   handleResize() {
@@ -194,12 +277,28 @@ export class SceneManager {
     }
 
     // Dynamic sunlight and shadow box tracking player
-    this.sunLight.position.set(catPosition.x + 12, 28, catPosition.z + 18);
+    this.sunLight.position.set(catPosition.x + 14, 30, catPosition.z + 20);
     this.sunLight.target.position.set(catPosition.x, 0, catPosition.z + 8);
     this.sunLight.target.updateMatrixWorld();
 
-    // Sunbeams follow along
-    this.sunbeams.position.z = Math.floor(catPosition.z / 40) * 40;
+    // Dynamic player fill light illuminates fur sheen and scale gloss
+    this.playerFillLight.position.set(catPosition.x * 0.5, 2.4 + catPosition.y, catPosition.z - 1.5);
+
+    // Sky dome stays centered around player
+    if (this.skyDome) {
+      this.skyDome.position.set(0, 0, catPosition.z);
+    }
+
+    // Ground mist drifts along with player
+    if (this.groundMist) {
+      this.groundMist.position.z = Math.floor(catPosition.z / 30) * 30;
+    }
+
+    // Sunbeams follow along and gently shimmer
+    if (this.sunbeams) {
+      this.sunbeams.position.z = Math.floor(catPosition.z / 36) * 36;
+      this.sunbeams.rotation.y = Math.sin(performance.now() * 0.0008) * 0.08;
+    }
   }
 
   render() {

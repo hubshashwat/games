@@ -42,7 +42,57 @@ export class Snake {
   }
 
   /**
-   * Procedural scale texture with diamond patterns and belly scutes
+   * Procedural scale micro-normal/bump map with embossed diamond scales & ventral scutes
+   */
+  createSnakeScaleBumpMap() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Neutral baseline
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Embossed diamond scales
+    const scaleSize = 24;
+    for (let y = 0; y < 512; y += scaleSize) {
+      for (let x = 0; x < 512; x += scaleSize) {
+        const cx = x + (y % (scaleSize * 2) === 0 ? 0 : scaleSize / 2);
+
+        // Raised center
+        const grad = ctx.createRadialGradient(cx, y + scaleSize / 2, 2, cx, y + scaleSize / 2, scaleSize / 2);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.7, '#999999');
+        grad.addColorStop(1.0, '#303030');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx, y);
+        ctx.lineTo(cx + scaleSize / 2, y + scaleSize / 2);
+        ctx.lineTo(cx, y + scaleSize);
+        ctx.lineTo(cx - scaleSize / 2, y + scaleSize / 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
+    // Belly plate ridges
+    for (let y = 420; y < 512; y += 12) {
+      ctx.fillStyle = '#b0b0b0';
+      ctx.fillRect(0, y, 512, 4);
+      ctx.fillStyle = '#404040';
+      ctx.fillRect(0, y + 4, 512, 3);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    return texture;
+  }
+
+  /**
+   * Procedural scale texture with emerald/gold diamond patterns and belly scutes
    */
   createSnakeScaleTexture() {
     const canvas = document.createElement('canvas');
@@ -50,19 +100,19 @@ export class Snake {
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Base emerald reptile green
+    // Base deep rainforest python green
     const grad = ctx.createLinearGradient(0, 0, 512, 0);
-    grad.addColorStop(0, '#102e18');
-    grad.addColorStop(0.3, '#1c5e31');
-    grad.addColorStop(0.5, '#2dc263');
-    grad.addColorStop(0.7, '#1c5e31');
-    grad.addColorStop(1.0, '#102e18');
+    grad.addColorStop(0, '#0a2213');
+    grad.addColorStop(0.25, '#164826');
+    grad.addColorStop(0.5, '#28aa52');
+    grad.addColorStop(0.75, '#164826');
+    grad.addColorStop(1.0, '#0a2213');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
-    // Diamond pattern scales on back
-    ctx.strokeStyle = 'rgba(10, 25, 12, 0.85)';
-    ctx.lineWidth = 2.5;
+    // Diamond pattern scales on back with golden-amber highlights
+    ctx.strokeStyle = 'rgba(6, 18, 10, 0.9)';
+    ctx.lineWidth = 2.2;
 
     const scaleSize = 24;
     for (let y = 0; y < 512; y += scaleSize) {
@@ -76,16 +126,17 @@ export class Snake {
         ctx.closePath();
         ctx.stroke();
 
-        // Highlight center of scale
-        ctx.fillStyle = 'rgba(120, 255, 160, 0.12)';
+        // Luminescent emerald & golden scale core
+        const isDorsalCenter = (cx > 180 && cx < 330);
+        ctx.fillStyle = isDorsalCenter ? 'rgba(215, 185, 80, 0.28)' : 'rgba(120, 255, 160, 0.16)';
         ctx.fill();
       }
     }
 
-    // Belly ventral scutes (horizontal bands along bottom edge)
-    ctx.fillStyle = 'rgba(235, 230, 180, 0.45)';
+    // Belly ventral scutes (warm ivory plates along bottom edge)
+    ctx.fillStyle = 'rgba(235, 225, 185, 0.65)';
     ctx.fillRect(0, 420, 512, 92);
-    ctx.strokeStyle = 'rgba(60, 55, 30, 0.5)';
+    ctx.strokeStyle = 'rgba(70, 60, 35, 0.6)';
     for (let y = 420; y < 512; y += 12) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -101,36 +152,46 @@ export class Snake {
 
   buildSnakeModel() {
     const scaleTexture = this.createSnakeScaleTexture();
+    this.scaleBumpTexture = this.createSnakeScaleBumpMap();
 
-    // Scale PBR Material
-    this.scaleMaterial = new THREE.MeshStandardMaterial({
+    // Ultra-Realistic PBR Wet Reptile Scale Material (MeshPhysicalMaterial with high clearcoat)
+    this.scaleMaterial = new THREE.MeshPhysicalMaterial({
       map: scaleTexture,
-      roughness: 0.38,
-      metalness: 0.22,
+      bumpMap: this.scaleBumpTexture,
+      bumpScale: 0.055,
+      roughness: 0.28,
+      metalness: 0.12,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.14,
       shadowSide: THREE.DoubleSide
     });
 
-    // Dark flesh interior material (mouth, throat)
-    this.mouthMaterial = new THREE.MeshStandardMaterial({
-      color: 0x8a1c2b,
-      roughness: 0.5,
-      metalness: 0.05
-    });
-
-    // Razor-sharp venomous fangs material
-    this.fangMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+    // Dark wet buccal cavity material (mouth, throat)
+    this.mouthMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0x7c1524,
       roughness: 0.15,
-      metalness: 0.1
+      metalness: 0.05,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.1
     });
 
-    // Predatory glowing reptilian eyes
-    this.eyeMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffcc00,
-      emissive: 0xff6600,
-      emissiveIntensity: 0.85,
-      roughness: 0.1,
-      metalness: 0.1
+    // Razor-sharp venomous fangs with wet ivory sheen
+    this.fangMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      roughness: 0.08,
+      metalness: 0.05,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.05
+    });
+
+    // Predatory glowing reptilian eyes with glass cornea
+    this.eyeMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xffbb00,
+      emissive: 0xff5500,
+      emissiveIntensity: 0.95,
+      roughness: 0.05,
+      metalness: 0.1,
+      clearcoat: 1.0
     });
 
     // Forked tongue material
@@ -161,6 +222,33 @@ export class Snake {
     const eyeR = new THREE.Mesh(eyeGeo, this.eyeMaterial);
     eyeR.position.set(-0.24, 0.12, 0.12);
     this.headGroup.add(eyeR);
+
+    // Supraocular brow ridges (predatory viper brow overhang)
+    const browGeoL = new THREE.BoxGeometry(0.12, 0.04, 0.22);
+    browGeoL.rotateZ(0.28);
+    const browL = new THREE.Mesh(browGeoL, this.scaleMaterial);
+    browL.position.set(0.25, 0.17, 0.1);
+    browL.castShadow = true;
+    this.headGroup.add(browL);
+
+    const browGeoR = new THREE.BoxGeometry(0.12, 0.04, 0.22);
+    browGeoR.rotateZ(-0.28);
+    const browR = new THREE.Mesh(browGeoR, this.scaleMaterial);
+    browR.position.set(-0.25, 0.17, 0.1);
+    browR.castShadow = true;
+    this.headGroup.add(browR);
+
+    // Heat-sensing pit organs (specialized sensory pits)
+    const pitGeo = new THREE.ConeGeometry(0.025, 0.05, 4);
+    pitGeo.rotateX(Math.PI / 2);
+    this.pitMaterial = new THREE.MeshBasicMaterial({ color: 0x180808 });
+    const pitL = new THREE.Mesh(pitGeo, this.pitMaterial);
+    pitL.position.set(0.18, 0.06, 0.26);
+    this.headGroup.add(pitL);
+
+    const pitR = new THREE.Mesh(pitGeo, this.pitMaterial);
+    pitR.position.set(-0.18, 0.06, 0.26);
+    this.headGroup.add(pitR);
 
     // Hinged Lower Jaw (Drops open during lunges)
     this.lowerJaw = new THREE.Group();
@@ -366,10 +454,12 @@ export class Snake {
   destroy() {
     this.scene.remove(this.group);
     if (this.scaleMaterial.map) this.scaleMaterial.map.dispose();
+    if (this.scaleBumpTexture) this.scaleBumpTexture.dispose();
     this.scaleMaterial.dispose();
     this.mouthMaterial.dispose();
     this.fangMaterial.dispose();
     this.eyeMaterial.dispose();
     this.tongueMaterial.dispose();
+    if (this.pitMaterial) this.pitMaterial.dispose();
   }
 }

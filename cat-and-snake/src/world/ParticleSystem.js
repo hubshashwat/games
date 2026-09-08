@@ -9,6 +9,8 @@ export class ParticleSystem {
   constructor(scene) {
     this.scene = scene;
 
+    this.particleTexture = this.createSoftParticleTexture();
+
     // 1. Ambient Sun Dust & Spores System
     this.numDust = 250;
     this.dustGeometry = new THREE.BufferGeometry();
@@ -25,10 +27,11 @@ export class ParticleSystem {
     this.dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
 
     this.dustMaterial = new THREE.PointsMaterial({
-      color: 0xffe899,
-      size: 0.15,
+      map: this.particleTexture,
+      color: 0xffea9e,
+      size: 0.22,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.65,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
@@ -48,8 +51,9 @@ export class ParticleSystem {
     this.fireflyGeometry.setAttribute('position', new THREE.BufferAttribute(fireflyPositions, 3));
 
     this.fireflyMaterial = new THREE.PointsMaterial({
-      color: 0x48ff85,
-      size: 0.22,
+      map: this.particleTexture,
+      color: 0x55ff88,
+      size: 0.35,
       transparent: true,
       opacity: 0.85,
       blending: THREE.AdditiveBlending,
@@ -71,10 +75,11 @@ export class ParticleSystem {
     this.transientGeometry.setAttribute('color', new THREE.BufferAttribute(this.transientColors, 3));
 
     this.transientMaterial = new THREE.PointsMaterial({
-      size: 0.18,
+      map: this.particleTexture,
+      size: 0.25,
       vertexColors: true,
       transparent: true,
-      opacity: 0.9,
+      opacity: 0.85,
       depthWrite: false
     });
 
@@ -82,6 +87,21 @@ export class ParticleSystem {
     this.scene.add(this.transientPoints);
 
     this.nextTransientIndex = 0;
+  }
+
+  createSoftParticleTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+    grad.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+    grad.addColorStop(0.25, 'rgba(255, 255, 255, 0.75)');
+    grad.addColorStop(0.6, 'rgba(255, 255, 255, 0.25)');
+    grad.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(canvas);
   }
 
   /**
@@ -225,5 +245,6 @@ export class ParticleSystem {
     this.fireflyMaterial.dispose();
     this.transientGeometry.dispose();
     this.transientMaterial.dispose();
+    if (this.particleTexture) this.particleTexture.dispose();
   }
 }

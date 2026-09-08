@@ -8,98 +8,326 @@ import * as THREE from 'three';
 
 export class EnvironmentAssets {
   constructor() {
+    this.textures = [];
     this.materials = this.initMaterials();
   }
 
   initMaterials() {
-    // 1. Procedural Mossy Bark Texture
+    // 1. Procedural Mossy Bark Texture & Bump Map
     const barkCanvas = document.createElement('canvas');
     barkCanvas.width = 512;
     barkCanvas.height = 512;
     const bCtx = barkCanvas.getContext('2d');
 
-    // Base dark bark
-    bCtx.fillStyle = '#2c1e14';
+    // Base dark weathered ironwood bark
+    bCtx.fillStyle = '#26180e';
     bCtx.fillRect(0, 0, 512, 512);
 
-    // Bark ridges & cracks
-    for (let i = 0; i < 400; i++) {
+    // Vertical fibrous bark grain, furrows & crevices
+    for (let i = 0; i < 900; i++) {
       const y = Math.random() * 512;
-      const h = 40 + Math.random() * 80;
+      const h = 40 + Math.random() * 120;
       const x = Math.random() * 512;
-      bCtx.fillStyle = (Math.random() > 0.5) ? '#18100a' : '#3f2e21';
-      bCtx.fillRect(x, y, 4 + Math.random() * 6, h);
+      const w = 1.5 + Math.random() * 4;
+      bCtx.fillStyle = (Math.random() > 0.5) ? '#130a05' : '#382416';
+      bCtx.fillRect(x, y, w, h);
     }
 
-    // Moss patches
-    bCtx.fillStyle = 'rgba(45, 95, 35, 0.45)';
-    for (let i = 0; i < 40; i++) {
-      const cx = Math.random() * 512;
-      const cy = Math.random() * 512;
-      const r = 16 + Math.random() * 32;
-      bCtx.beginPath();
-      bCtx.arc(cx, cy, r, 0, Math.PI * 2);
-      bCtx.fill();
+    // Organic micro-fissures and fine bark grain
+    for (let i = 0; i < 3000; i++) {
+      const gx = Math.random() * 512;
+      const gy = Math.random() * 512;
+      bCtx.fillStyle = (Math.random() > 0.5) ? 'rgba(60, 42, 28, 0.35)' : 'rgba(12, 7, 3, 0.45)';
+      bCtx.fillRect(gx, gy, 1 + Math.random() * 2, 6 + Math.random() * 14);
+    }
+
+    // Subtle moss wash blended vertically into deep crevices (soft, natural, no circular blobs)
+    for (let i = 0; i < 600; i++) {
+      const mx = Math.random() * 512;
+      const my = Math.random() * 512;
+      bCtx.fillStyle = (Math.random() > 0.4) ? 'rgba(40, 78, 30, 0.22)' : 'rgba(58, 98, 42, 0.18)';
+      bCtx.fillRect(mx, my, 2 + Math.random() * 4, 10 + Math.random() * 24);
     }
 
     const barkTexture = new THREE.CanvasTexture(barkCanvas);
     barkTexture.wrapS = THREE.RepeatWrapping;
     barkTexture.wrapT = THREE.RepeatWrapping;
+    this.textures.push(barkTexture);
 
-    // 2. Leaf Texture
+    // Grayscale Bark Bump Map (Pronounced vertical furrows & tactile wood relief)
+    const barkBumpCanvas = document.createElement('canvas');
+    barkBumpCanvas.width = 512;
+    barkBumpCanvas.height = 512;
+    const bbCtx = barkBumpCanvas.getContext('2d');
+    bbCtx.fillStyle = '#808080';
+    bbCtx.fillRect(0, 0, 512, 512);
+
+    for (let i = 0; i < 900; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const h = 40 + Math.random() * 120;
+      const isRidge = Math.random() > 0.5;
+      bbCtx.fillStyle = isRidge ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.4)';
+      bbCtx.fillRect(x, y, 1.5 + Math.random() * 3.5, h);
+    }
+
+    const barkBumpTexture = new THREE.CanvasTexture(barkBumpCanvas);
+    barkBumpTexture.wrapS = THREE.RepeatWrapping;
+    barkBumpTexture.wrapT = THREE.RepeatWrapping;
+    this.textures.push(barkBumpTexture);
+
+    // 2. Procedural Weathered Stone Texture & Bump Map
+    const stoneCanvas = document.createElement('canvas');
+    stoneCanvas.width = 512;
+    stoneCanvas.height = 512;
+    const sCtx = stoneCanvas.getContext('2d');
+
+    // Base aged granite / basaltic rock
+    sCtx.fillStyle = '#3c453a';
+    sCtx.fillRect(0, 0, 512, 512);
+
+    // Sedimentary strata bands
+    for (let i = 0; i < 50; i++) {
+      const y = i * 10 + Math.random() * 6;
+      sCtx.fillStyle = (i % 2 === 0) ? 'rgba(50, 60, 48, 0.55)' : 'rgba(28, 34, 26, 0.5)';
+      sCtx.fillRect(0, y, 512, 6 + Math.random() * 6);
+    }
+
+    // Fine mineral speckling (quartz, mica, basalt)
+    for (let i = 0; i < 4000; i++) {
+      const sx = Math.random() * 512;
+      const sy = Math.random() * 512;
+      sCtx.fillStyle = Math.random() > 0.5 ? 'rgba(160, 175, 155, 0.28)' : 'rgba(12, 16, 12, 0.4)';
+      sCtx.fillRect(sx, sy, 1 + Math.random() * 2, 1 + Math.random() * 2);
+    }
+
+    // Subtle natural lichen wash along horizontal fractures (natural streaks, no circular blobs)
+    for (let i = 0; i < 400; i++) {
+      const lx = Math.random() * 512;
+      const ly = Math.random() * 512;
+      sCtx.fillStyle = 'rgba(42, 80, 36, 0.25)';
+      sCtx.fillRect(lx, ly, 6 + Math.random() * 18, 2 + Math.random() * 4);
+    }
+
+    const stoneTexture = new THREE.CanvasTexture(stoneCanvas);
+    stoneTexture.wrapS = THREE.RepeatWrapping;
+    stoneTexture.wrapT = THREE.RepeatWrapping;
+    this.textures.push(stoneTexture);
+
+    // Stone Grayscale Bump Map
+    const stoneBumpCanvas = document.createElement('canvas');
+    stoneBumpCanvas.width = 512;
+    stoneBumpCanvas.height = 512;
+    const sbCtx = stoneBumpCanvas.getContext('2d');
+    sbCtx.fillStyle = '#808080';
+    sbCtx.fillRect(0, 0, 512, 512);
+
+    // Jagged fracture cracks
+    for (let i = 0; i < 20; i++) {
+      sbCtx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+      sbCtx.lineWidth = 2 + Math.random() * 2;
+      sbCtx.beginPath();
+      let cx = Math.random() * 512;
+      let cy = Math.random() * 512;
+      sbCtx.moveTo(cx, cy);
+      for (let s = 0; s < 5; s++) {
+        cx += (Math.random() - 0.5) * 60;
+        cy += (Math.random() - 0.5) * 60;
+        sbCtx.lineTo(cx, cy);
+      }
+      sbCtx.stroke();
+    }
+
+    // Granular rock roughness
+    for (let i = 0; i < 3000; i++) {
+      const rx = Math.random() * 512;
+      const ry = Math.random() * 512;
+      sbCtx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0, 0, 0.35)';
+      sbCtx.fillRect(rx, ry, 2, 2);
+    }
+
+    const stoneBumpTexture = new THREE.CanvasTexture(stoneBumpCanvas);
+    stoneBumpTexture.wrapS = THREE.RepeatWrapping;
+    stoneBumpTexture.wrapT = THREE.RepeatWrapping;
+    this.textures.push(stoneBumpTexture);
+
+    // 3. High-Fidelity Leaf Texture with Pinnate Veining
     const leafCanvas = document.createElement('canvas');
     leafCanvas.width = 256;
     leafCanvas.height = 256;
     const lCtx = leafCanvas.getContext('2d');
+
     const leafGrad = lCtx.createRadialGradient(128, 128, 10, 128, 128, 128);
-    leafGrad.addColorStop(0, '#38a846');
-    leafGrad.addColorStop(0.7, '#1b5e20');
-    leafGrad.addColorStop(1.0, '#0f3d13');
+    leafGrad.addColorStop(0, '#369e44');
+    leafGrad.addColorStop(0.65, '#195c21');
+    leafGrad.addColorStop(1.0, '#0d3811');
     lCtx.fillStyle = leafGrad;
     lCtx.fillRect(0, 0, 256, 256);
 
+    // Central leaf spine / midrib
+    lCtx.strokeStyle = 'rgba(138, 205, 120, 0.7)';
+    lCtx.lineWidth = 4;
+    lCtx.beginPath();
+    lCtx.moveTo(128, 256);
+    lCtx.lineTo(128, 0);
+    lCtx.stroke();
+
+    // Lateral secondary veins
+    lCtx.strokeStyle = 'rgba(110, 185, 95, 0.45)';
+    lCtx.lineWidth = 1.5;
+    for (let v = 20; v < 250; v += 22) {
+      lCtx.beginPath();
+      lCtx.moveTo(128, v);
+      lCtx.lineTo(30, v - 30);
+      lCtx.moveTo(128, v);
+      lCtx.lineTo(226, v - 30);
+      lCtx.stroke();
+    }
+
     const leafTexture = new THREE.CanvasTexture(leafCanvas);
+    this.textures.push(leafTexture);
+
+    // 4. Procedural Viscous Mud Puddle Texture & Bump Map
+    const mudCanvas = document.createElement('canvas');
+    mudCanvas.width = 512;
+    mudCanvas.height = 512;
+    const mCtx = mudCanvas.getContext('2d');
+
+    // Deep saturated wet silt
+    mCtx.fillStyle = '#1c130b';
+    mCtx.fillRect(0, 0, 512, 512);
+
+    // Murky undulating pool gradients
+    const mudGrad = mCtx.createRadialGradient(256, 256, 30, 256, 256, 250);
+    mudGrad.addColorStop(0, '#0d0905'); // deep puddle center
+    mudGrad.addColorStop(0.6, '#281c11'); // murky water shelf
+    mudGrad.addColorStop(1.0, '#382718'); // damp mud edge
+    mCtx.fillStyle = mudGrad;
+    mCtx.fillRect(0, 0, 512, 512);
+
+    // Submerged decaying leaf flecks
+    for (let i = 0; i < 60; i++) {
+      const lx = Math.random() * 512;
+      const ly = Math.random() * 512;
+      mCtx.fillStyle = (Math.random() > 0.5) ? 'rgba(70, 55, 20, 0.45)' : 'rgba(35, 60, 25, 0.4)';
+      mCtx.beginPath();
+      mCtx.ellipse(lx, ly, 6 + Math.random() * 8, 3 + Math.random() * 4, Math.random() * Math.PI, 0, Math.PI * 2);
+      mCtx.fill();
+    }
+
+    const mudTexture = new THREE.CanvasTexture(mudCanvas);
+    this.textures.push(mudTexture);
+
+    // Mud Bump Map for ripples & slick muddy contours
+    const mudBumpCanvas = document.createElement('canvas');
+    mudBumpCanvas.width = 256;
+    mudBumpCanvas.height = 256;
+    const mbCtx = mudBumpCanvas.getContext('2d');
+    mbCtx.fillStyle = '#808080';
+    mbCtx.fillRect(0, 0, 256, 256);
+
+    for (let r = 20; r < 120; r += 18) {
+      mbCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      mbCtx.lineWidth = 4;
+      mbCtx.beginPath();
+      mbCtx.arc(128, 128, r, 0, Math.PI * 2);
+      mbCtx.stroke();
+    }
+
+    const mudBumpTexture = new THREE.CanvasTexture(mudBumpCanvas);
+    this.textures.push(mudBumpTexture);
+
+    // 5. Wood End Grain (Annual Growth Rings for fallen log ends)
+    const ringsCanvas = document.createElement('canvas');
+    ringsCanvas.width = 256;
+    ringsCanvas.height = 256;
+    const rCtx = ringsCanvas.getContext('2d');
+    rCtx.fillStyle = '#6e5138';
+    rCtx.fillRect(0, 0, 256, 256);
+
+    for (let r = 8; r < 126; r += 6) {
+      rCtx.strokeStyle = (r % 12 === 0) ? '#382516' : '#4d3722';
+      rCtx.lineWidth = 1.5;
+      rCtx.beginPath();
+      rCtx.arc(128, 128, r, 0, Math.PI * 2);
+      rCtx.stroke();
+    }
+
+    // Radiating drying split cracks
+    rCtx.strokeStyle = '#1e120a';
+    rCtx.lineWidth = 2.5;
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 3 + Math.random() * 0.4) {
+      rCtx.beginPath();
+      rCtx.moveTo(128, 128);
+      rCtx.lineTo(128 + Math.cos(a) * 110, 128 + Math.sin(a) * 110);
+      rCtx.stroke();
+    }
+
+    const ringsTexture = new THREE.CanvasTexture(ringsCanvas);
+    this.textures.push(ringsTexture);
 
     return {
       bark: new THREE.MeshStandardMaterial({
         map: barkTexture,
-        roughness: 0.88,
-        metalness: 0.05
+        bumpMap: barkBumpTexture,
+        bumpScale: 0.07,
+        roughness: 0.86,
+        metalness: 0.04
       }),
       leaves: new THREE.MeshStandardMaterial({
         map: leafTexture,
-        roughness: 0.55,
+        roughness: 0.42,
         metalness: 0.02,
         side: THREE.DoubleSide
       }),
       stone: new THREE.MeshStandardMaterial({
-        color: 0x4a5448,
-        roughness: 0.92,
-        metalness: 0.1
-      }),
-      mud: new THREE.MeshStandardMaterial({
-        color: 0x22170d,
-        roughness: 0.25, // wet glossy sheen
+        map: stoneTexture,
+        bumpMap: stoneBumpTexture,
+        bumpScale: 0.085,
+        roughness: 0.84,
         metalness: 0.08
+      }),
+      mud: new THREE.MeshPhysicalMaterial({
+        map: mudTexture,
+        bumpMap: mudBumpTexture,
+        bumpScale: 0.04,
+        roughness: 0.16,
+        metalness: 0.06,
+        clearcoat: 0.95,
+        clearcoatRoughness: 0.12
       }),
       logMoss: new THREE.MeshStandardMaterial({
         map: barkTexture,
-        roughness: 0.85,
-        metalness: 0.05
+        bumpMap: barkBumpTexture,
+        bumpScale: 0.075,
+        roughness: 0.80,
+        metalness: 0.04,
+        color: 0xa6b294
+      }),
+      woodRings: new THREE.MeshStandardMaterial({
+        map: ringsTexture,
+        roughness: 0.78,
+        metalness: 0.04
+      }),
+      shelfFungus: new THREE.MeshStandardMaterial({
+        color: 0xd97526,
+        roughness: 0.52,
+        metalness: 0.06
       }),
       starOrchid: new THREE.MeshStandardMaterial({
         color: 0x00f0ff,
         emissive: 0x0099cc,
-        emissiveIntensity: 0.9,
-        roughness: 0.2,
-        metalness: 0.2
+        emissiveIntensity: 0.95,
+        roughness: 0.18,
+        metalness: 0.15
       }),
-      relicGold: new THREE.MeshStandardMaterial({
+      relicGold: new THREE.MeshPhysicalMaterial({
         color: 0xffd700,
         emissive: 0xb8860b,
-        emissiveIntensity: 0.6,
-        roughness: 0.25,
-        metalness: 0.85
+        emissiveIntensity: 0.65,
+        roughness: 0.22,
+        metalness: 0.92,
+        clearcoat: 0.85
       })
     };
   }
@@ -110,61 +338,96 @@ export class EnvironmentAssets {
   createKapokTree(height = 16, radius = 1.6) {
     const group = new THREE.Group();
 
-    // Massive trunk
-    const trunkGeo = new THREE.CylinderGeometry(radius * 0.65, radius, height, 10);
+    // 1. Massive trunk with smooth cylinder geometry
+    const trunkGeo = new THREE.CylinderGeometry(radius * 0.62, radius, height, 16);
     const trunk = new THREE.Mesh(trunkGeo, this.materials.bark);
     trunk.position.y = height / 2;
     trunk.castShadow = true;
     trunk.receiveShadow = true;
     group.add(trunk);
 
-    // Buttress roots sprawling outward
+    // 2. Realistic Curved Buttress Plank Roots (flaring naturally into soil)
     const numRoots = 4;
     for (let r = 0; r < numRoots; r++) {
-      const angle = (r / numRoots) * Math.PI * 2 + Math.random() * 0.4;
-      const rootGeo = new THREE.ConeGeometry(radius * 0.45, height * 0.35, 5);
-      rootGeo.rotateZ(Math.PI / 4);
+      const angle = (r / numRoots) * Math.PI * 2 + (r % 2 === 0 ? 0.2 : -0.2);
+      const rootLength = radius * 1.5;
+      const rootHeight = height * 0.22;
+      const rootThickness = 0.16;
+
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0);
+      shape.lineTo(rootLength, 0);
+      shape.quadraticCurveTo(rootLength * 0.22, rootHeight * 0.15, 0, rootHeight);
+      shape.closePath();
+
+      const rootGeo = new THREE.ExtrudeGeometry(shape, {
+        depth: rootThickness,
+        bevelEnabled: true,
+        bevelSegments: 2,
+        steps: 1,
+        bevelSize: 0.03,
+        bevelThickness: 0.03
+      });
+      rootGeo.translate(0, 0, -rootThickness / 2);
       const root = new THREE.Mesh(rootGeo, this.materials.bark);
-      root.position.set(
-        Math.cos(angle) * (radius * 0.85),
-        height * 0.12,
-        Math.sin(angle) * (radius * 0.85)
-      );
-      root.rotation.y = angle;
+      root.position.set(Math.cos(angle) * (radius * 0.6), 0, Math.sin(angle) * (radius * 0.6));
+      root.rotation.y = -angle;
       root.castShadow = true;
+      root.receiveShadow = true;
       group.add(root);
     }
 
-    // Dense Canopy Domes
+    // 3. Dense Multi-Lobed Canopy Clouds with Smooth Shading
     const canopyLevels = 3;
     for (let lvl = 0; lvl < canopyLevels; lvl++) {
-      const domeR = radius * (3.2 - lvl * 0.6);
-      const domeGeo = new THREE.DodecahedronGeometry(domeR, 1);
-      domeGeo.scale(1.4, 0.65, 1.4);
-      const canopy = new THREE.Mesh(domeGeo, this.materials.leaves);
-      canopy.position.set(
-        (Math.random() - 0.5) * 1.5,
-        height * (0.85 + lvl * 0.15),
-        (Math.random() - 0.5) * 1.5
+      const domeR = radius * (3.0 - lvl * 0.55);
+      const tierY = height * (0.82 + lvl * 0.14);
+
+      // Central smooth foliage lobe
+      const centerDome = new THREE.Mesh(
+        new THREE.SphereGeometry(domeR, 14, 10),
+        this.materials.leaves
       );
-      canopy.castShadow = true;
-      group.add(canopy);
+      centerDome.position.set(0, tierY, 0);
+      centerDome.scale.set(1.35, 0.65, 1.35);
+      centerDome.castShadow = true;
+      group.add(centerDome);
+
+      // Flanking foliage lobes for natural canopy silhouette
+      for (let lobe = 0; lobe < 3; lobe++) {
+        const lAngle = (lobe / 3) * Math.PI * 2 + lvl;
+        const lDist = domeR * 0.55;
+        const flankDome = new THREE.Mesh(
+          new THREE.SphereGeometry(domeR * 0.75, 12, 8),
+          this.materials.leaves
+        );
+        flankDome.position.set(
+          Math.cos(lAngle) * lDist,
+          tierY + (lobe - 1) * 0.4,
+          Math.sin(lAngle) * lDist
+        );
+        flankDome.scale.set(1.25, 0.6, 1.25);
+        flankDome.castShadow = true;
+        group.add(flankDome);
+      }
     }
 
-    // Hanging Lianas dangling from branches
-    const numVines = 3;
+    // 4. Hanging Lianas dangling naturally into mist
+    const numVines = 4;
     for (let v = 0; v < numVines; v++) {
-      const vineLen = 6 + Math.random() * 5;
-      const vineGeo = new THREE.CylinderGeometry(0.04, 0.05, vineLen, 5);
+      const vineLen = 7 + Math.random() * 6;
+      const vineGeo = new THREE.CylinderGeometry(0.035, 0.045, vineLen, 6);
       const vine = new THREE.Mesh(vineGeo, this.materials.bark);
-      const vAngle = Math.random() * Math.PI * 2;
-      const vDist = radius * 1.8 + Math.random() * 1.5;
+      const vAngle = (v / numVines) * Math.PI * 2 + 0.3;
+      const vDist = radius * 1.7 + Math.random() * 1.2;
       vine.position.set(
         Math.cos(vAngle) * vDist,
-        height * 0.9 - vineLen / 2,
+        height * 0.88 - vineLen / 2,
         Math.sin(vAngle) * vDist
       );
-      vine.rotation.z = (Math.random() - 0.5) * 0.2;
+      vine.rotation.z = (Math.random() - 0.5) * 0.18;
+      vine.rotation.x = (Math.random() - 0.5) * 0.18;
+      vine.castShadow = true;
       group.add(vine);
     }
 
@@ -176,15 +439,16 @@ export class EnvironmentAssets {
    */
   createFernCluster() {
     const group = new THREE.Group();
-    const numFronds = 7;
+    const numFronds = 8;
 
     for (let i = 0; i < numFronds; i++) {
-      const angle = (i / numFronds) * Math.PI * 2;
-      const frondGeo = new THREE.PlaneGeometry(0.5, 1.6);
-      frondGeo.translate(0, 0.8, 0);
+      const angle = (i / numFronds) * Math.PI * 2 + Math.random() * 0.25;
+      const frondGeo = new THREE.ConeGeometry(0.32, 1.7, 5);
+      frondGeo.scale(1.0, 1.0, 0.1); // tapered leaf blade
+      frondGeo.translate(0, 0.85, 0);
       const frond = new THREE.Mesh(frondGeo, this.materials.leaves);
       frond.rotation.y = angle;
-      frond.rotation.x = 0.55 + Math.random() * 0.25;
+      frond.rotation.x = 0.65 + Math.random() * 0.2; // arch outward
       frond.castShadow = true;
       group.add(frond);
     }
@@ -199,7 +463,7 @@ export class EnvironmentAssets {
     const group = new THREE.Group();
 
     // Log cylinder lying horizontally across track
-    const logGeo = new THREE.CylinderGeometry(0.48, 0.55, width, 10);
+    const logGeo = new THREE.CylinderGeometry(0.48, 0.55, width, 12, 1, true); // open ends for ring caps
     logGeo.rotateZ(Math.PI / 2);
     const log = new THREE.Mesh(logGeo, this.materials.logMoss);
     log.position.y = 0.45;
@@ -207,13 +471,42 @@ export class EnvironmentAssets {
     log.receiveShadow = true;
     group.add(log);
 
-    // Broken branch stubs
+    // Annual Growth Rings on cut/broken log ends
+    const endCapGeo = new THREE.CircleGeometry(0.51, 12);
+    const endCapL = new THREE.Mesh(endCapGeo, this.materials.woodRings);
+    endCapL.position.set(-width / 2, 0.45, 0);
+    endCapL.rotation.y = -Math.PI / 2;
+    group.add(endCapL);
+
+    const endCapR = new THREE.Mesh(endCapGeo, this.materials.woodRings);
+    endCapR.position.set(width / 2, 0.45, 0);
+    endCapR.rotation.y = Math.PI / 2;
+    group.add(endCapR);
+
+    // Broken splintered branch stubs
     for (let b = 0; b < 3; b++) {
-      const stubGeo = new THREE.CylinderGeometry(0.1, 0.16, 0.6, 6);
+      const stubGeo = new THREE.CylinderGeometry(0.08, 0.15, 0.55, 6);
       const stub = new THREE.Mesh(stubGeo, this.materials.bark);
-      stub.position.set((b - 1) * 1.8, 0.8, (Math.random() - 0.5) * 0.3);
+      stub.position.set((b - 1) * 1.8, 0.78, (Math.random() - 0.5) * 0.3);
       stub.rotation.z = (Math.random() - 0.5) * 0.8;
+      stub.castShadow = true;
       group.add(stub);
+    }
+
+    // Shelf bracket fungi (polypores) protruding from mossy bark
+    for (let f = 0; f < 4; f++) {
+      const fungus = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.18, 0.05, 8, 1, false, 0, Math.PI),
+        this.materials.shelfFungus
+      );
+      fungus.rotation.x = Math.PI / 2;
+      fungus.position.set(
+        -width * 0.35 + f * (width * 0.24),
+        0.35 + (f % 2) * 0.15,
+        0.52
+      );
+      fungus.castShadow = true;
+      group.add(fungus);
     }
 
     // Collision metadata
@@ -234,30 +527,52 @@ export class EnvironmentAssets {
   createLowArch(width = 6.6) {
     const group = new THREE.Group();
 
-    // Left & Right stone pillars
+    // Left & Right stone pillars with stepped footing & capitals
     const pillarGeo = new THREE.BoxGeometry(0.7, 3.5, 0.8);
     const pillarL = new THREE.Mesh(pillarGeo, this.materials.stone);
     pillarL.position.set(-width / 2, 1.75, 0);
     pillarL.castShadow = true;
+    pillarL.receiveShadow = true;
     group.add(pillarL);
 
     const pillarR = new THREE.Mesh(pillarGeo, this.materials.stone);
     pillarR.position.set(width / 2, 1.75, 0);
     pillarR.castShadow = true;
+    pillarR.receiveShadow = true;
     group.add(pillarR);
 
+    // Stone footing pedestals
+    const baseGeo = new THREE.BoxGeometry(0.95, 0.45, 1.05);
+    const baseL = new THREE.Mesh(baseGeo, this.materials.stone);
+    baseL.position.set(-width / 2, 0.22, 0);
+    baseL.castShadow = true;
+    group.add(baseL);
+
+    const baseR = new THREE.Mesh(baseGeo, this.materials.stone);
+    baseR.position.set(width / 2, 0.22, 0);
+    baseR.castShadow = true;
+    group.add(baseR);
+
     // Low crossbeam with hanging curtain of thick vines
-    const beamGeo = new THREE.BoxGeometry(width + 0.8, 0.6, 0.8);
+    const beamGeo = new THREE.BoxGeometry(width + 0.9, 0.6, 0.85);
     const beam = new THREE.Mesh(beamGeo, this.materials.stone);
     beam.position.set(0, 1.85, 0); // Bottom of beam is at ~1.55m, requiring slide
     beam.castShadow = true;
+    beam.receiveShadow = true;
     group.add(beam);
 
+    // Carved center keystone
+    const keystoneGeo = new THREE.BoxGeometry(0.55, 0.75, 0.95);
+    const keystone = new THREE.Mesh(keystoneGeo, this.materials.stone);
+    keystone.position.set(0, 1.85, 0);
+    keystone.castShadow = true;
+    group.add(keystone);
+
     // Hanging tangled vines
-    const numVines = 8;
+    const numVines = 9;
     for (let v = 0; v < numVines; v++) {
-      const x = -width * 0.4 + (v / (numVines - 1)) * (width * 0.8);
-      const vLen = 1.0 + Math.sin(v) * 0.3;
+      const x = -width * 0.42 + (v / (numVines - 1)) * (width * 0.84);
+      const vLen = 0.95 + Math.sin(v * 1.5) * 0.35;
       const vineGeo = new THREE.CylinderGeometry(0.035, 0.045, vLen, 5);
       const vine = new THREE.Mesh(vineGeo, this.materials.bark);
       vine.position.set(x, 1.55 - vLen / 2, (Math.random() - 0.5) * 0.2);
@@ -288,6 +603,7 @@ export class EnvironmentAssets {
     const bramble = new THREE.Mesh(clusterGeo, this.materials.bark);
     bramble.position.y = 0.85;
     bramble.castShadow = true;
+    bramble.receiveShadow = true;
     group.add(bramble);
 
     // Sharp spiky branches
@@ -297,6 +613,7 @@ export class EnvironmentAssets {
       const spike = new THREE.Mesh(spikeGeo, this.materials.bark);
       spike.position.set((Math.random() - 0.5) * 0.6, 0.8 + Math.random() * 0.6, (Math.random() - 0.5) * 0.4);
       spike.rotation.y = Math.random() * Math.PI * 2;
+      spike.castShadow = true;
       group.add(spike);
     }
 
@@ -317,7 +634,7 @@ export class EnvironmentAssets {
   createRockObstacle(width = 1.9) {
     const group = new THREE.Group();
 
-    // Jagged mossy boulder
+    // Main jagged mossy boulder with sharp geological facets
     const rockGeo = new THREE.DodecahedronGeometry(width * 0.55, 1);
     rockGeo.scale(1.0, 0.9, 0.85);
     const rock = new THREE.Mesh(rockGeo, this.materials.stone);
@@ -326,12 +643,27 @@ export class EnvironmentAssets {
     rock.receiveShadow = true;
     group.add(rock);
 
-    // Moss layer on top
-    const mossGeo = new THREE.SphereGeometry(width * 0.35, 6, 6);
-    mossGeo.scale(1.2, 0.4, 1.1);
+    // Weathered moss carpet on upper crown
+    const mossGeo = new THREE.SphereGeometry(width * 0.36, 8, 6);
+    mossGeo.scale(1.2, 0.38, 1.1);
     const moss = new THREE.Mesh(mossGeo, this.materials.leaves);
-    moss.position.set(0, width * 0.75, 0);
+    moss.position.set(0, width * 0.76, 0);
     group.add(moss);
+
+    // Clustered scree & talus companion stones at the base
+    const screeOffsets = [
+      { x: -width * 0.4, z: width * 0.28, s: 0.26 },
+      { x: width * 0.38, z: -width * 0.22, s: 0.32 },
+      { x: 0.1, z: width * 0.35, s: 0.22 }
+    ];
+    screeOffsets.forEach(sc => {
+      const screeGeo = new THREE.DodecahedronGeometry(sc.s, 0);
+      const screeMesh = new THREE.Mesh(screeGeo, this.materials.stone);
+      screeMesh.position.set(sc.x, sc.s * 0.6, sc.z);
+      screeMesh.castShadow = true;
+      screeMesh.receiveShadow = true;
+      group.add(screeMesh);
+    });
 
     group.userData = {
       type: 'obstacle',
@@ -426,5 +758,15 @@ export class EnvironmentAssets {
     };
 
     return group;
+  }
+
+  destroy() {
+    for (const mat of Object.values(this.materials)) {
+      mat.dispose();
+    }
+    for (const tex of this.textures) {
+      tex.dispose();
+    }
+    this.textures = [];
   }
 }

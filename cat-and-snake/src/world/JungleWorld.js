@@ -38,52 +38,94 @@ export class JungleWorld {
   }
 
   createGroundMaterial() {
+    // 1. Diffuse Ground Texture
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Rich jungle soil & damp earth
-    ctx.fillStyle = '#261b11';
+    // Rich jungle soil & damp humus earth
+    ctx.fillStyle = '#22150a';
     ctx.fillRect(0, 0, 512, 512);
 
-    // Subtle path trails (center path is more trodden)
+    // Trodden path gradient (center is worn trail, edges are dense moss banks)
     const grad = ctx.createLinearGradient(0, 0, 512, 0);
-    grad.addColorStop(0, '#1c2813'); // green moss edge
-    grad.addColorStop(0.2, '#312217'); // dirt trail
-    grad.addColorStop(0.5, '#423021'); // worn path center
-    grad.addColorStop(0.8, '#312217');
-    grad.addColorStop(1.0, '#1c2813');
+    grad.addColorStop(0.0, '#162e15'); // lush green moss bank
+    grad.addColorStop(0.18, '#263b1e'); // forest floor transition
+    grad.addColorStop(0.32, '#382516'); // damp soil shoulder
+    grad.addColorStop(0.5, '#4a3321');  // trodden packed loam center
+    grad.addColorStop(0.68, '#382516'); // damp soil shoulder
+    grad.addColorStop(0.82, '#263b1e'); // forest floor transition
+    grad.addColorStop(1.0, '#162e15'); // lush green moss bank
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
-    // Soil grain & pebbles
-    for (let i = 0; i < 3000; i++) {
+    // Granular soil grain, fine silt, and tiny pebbles
+    for (let i = 0; i < 3500; i++) {
       const rx = Math.random() * 512;
       const ry = Math.random() * 512;
-      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(80, 60, 40, 0.25)' : 'rgba(20, 15, 10, 0.35)';
+      ctx.fillStyle = Math.random() > 0.5 ? 'rgba(95, 75, 48, 0.28)' : 'rgba(18, 12, 6, 0.38)';
       ctx.fillRect(rx, ry, 2 + Math.random() * 3, 2 + Math.random() * 3);
     }
 
-    // Moss patches along edges
-    ctx.fillStyle = 'rgba(40, 95, 30, 0.4)';
-    for (let i = 0; i < 50; i++) {
-      const cx = (Math.random() > 0.5) ? Math.random() * 100 : 412 + Math.random() * 100;
-      const cy = Math.random() * 512;
+    // Decayed tropical leaf litter scattered across the forest floor
+    for (let i = 0; i < 120; i++) {
+      const lx = Math.random() * 512;
+      const ly = Math.random() * 512;
+      const rot = Math.random() * Math.PI;
+      const leafColor = (i % 3 === 0) ? 'rgba(110, 85, 35, 0.45)' : (i % 3 === 1) ? 'rgba(75, 50, 20, 0.4)' : 'rgba(40, 75, 30, 0.35)';
+      ctx.fillStyle = leafColor;
       ctx.beginPath();
-      ctx.arc(cx, cy, 12 + Math.random() * 24, 0, Math.PI * 2);
+      ctx.ellipse(lx, ly, 5 + Math.random() * 7, 2.5 + Math.random() * 3, rot, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 6);
+    // Natural moss stippling and micro-lichen spray along shoulders (soft, organic, no circular discs)
+    for (let i = 0; i < 1500; i++) {
+      const isLeft = Math.random() > 0.5;
+      const mx = isLeft ? Math.random() * 120 : 392 + Math.random() * 120;
+      const my = Math.random() * 512;
+      ctx.fillStyle = (Math.random() > 0.4) ? 'rgba(36, 88, 26, 0.45)' : 'rgba(56, 118, 40, 0.35)';
+      ctx.fillRect(mx, my, 2 + Math.random() * 3, 2 + Math.random() * 4);
+    }
+
+    this.groundTexture = new THREE.CanvasTexture(canvas);
+    this.groundTexture.wrapS = THREE.RepeatWrapping;
+    this.groundTexture.wrapT = THREE.RepeatWrapping;
+    this.groundTexture.repeat.set(1, 6);
+
+    // 2. Grayscale Bump Map for tactical tactile relief
+    const bumpCanvas = document.createElement('canvas');
+    bumpCanvas.width = 512;
+    bumpCanvas.height = 512;
+    const bCtx = bumpCanvas.getContext('2d');
+    bCtx.fillStyle = '#808080';
+    bCtx.fillRect(0, 0, 512, 512);
+
+    // Soil roughness & pebbles
+    for (let i = 0; i < 3000; i++) {
+      const bx = Math.random() * 512;
+      const by = Math.random() * 512;
+      bCtx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
+      bCtx.fillRect(bx, by, 2 + Math.random() * 3, 2 + Math.random() * 3);
+    }
+
+    // Longitudinal wheel / animal trail ruts
+    bCtx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    bCtx.fillRect(210, 0, 15, 512);
+    bCtx.fillRect(285, 0, 15, 512);
+
+    this.groundBumpTexture = new THREE.CanvasTexture(bumpCanvas);
+    this.groundBumpTexture.wrapS = THREE.RepeatWrapping;
+    this.groundBumpTexture.wrapT = THREE.RepeatWrapping;
+    this.groundBumpTexture.repeat.set(1, 6);
 
     return new THREE.MeshStandardMaterial({
-      map: texture,
+      map: this.groundTexture,
+      bumpMap: this.groundBumpTexture,
+      bumpScale: 0.055,
       roughness: 0.82,
-      metalness: 0.05
+      metalness: 0.04
     });
   }
 
@@ -100,6 +142,25 @@ export class JungleWorld {
     ground.position.z = this.chunkLength / 2;
     chunkGroup.add(ground);
 
+    // 1B. Sloped Rainforest Canyon Embankments (Rising earth berms along borders)
+    const bermWidth = 6.0;
+    const bermHeight = 2.2;
+    const bermGeoL = new THREE.PlaneGeometry(bermWidth, this.chunkLength, 4, 8);
+    bermGeoL.rotateX(-Math.PI / 2);
+    bermGeoL.rotateZ(0.28); // sloped upwards away from track
+    const bermL = new THREE.Mesh(bermGeoL, this.groundMaterial);
+    bermL.position.set(-8.0 - bermWidth * 0.45, bermHeight * 0.45, this.chunkLength / 2);
+    bermL.receiveShadow = true;
+    chunkGroup.add(bermL);
+
+    const bermGeoR = new THREE.PlaneGeometry(bermWidth, this.chunkLength, 4, 8);
+    bermGeoR.rotateX(-Math.PI / 2);
+    bermGeoR.rotateZ(-0.28);
+    const bermR = new THREE.Mesh(bermGeoR, this.groundMaterial);
+    bermR.position.set(8.0 + bermWidth * 0.45, bermHeight * 0.45, this.chunkLength / 2);
+    bermR.receiveShadow = true;
+    chunkGroup.add(bermR);
+
     // 2. Dense Border Trees & Ferns
     const numTreesPerSide = 5;
     for (let t = 0; t < numTreesPerSide; t++) {
@@ -107,13 +168,13 @@ export class JungleWorld {
 
       // Left Kapok Tree
       const treeL = this.assets.createKapokTree(14 + Math.random() * 4, 1.4 + Math.random() * 0.4);
-      treeL.position.set(-6.5 - Math.random() * 3.5, 0, zOffset);
+      treeL.position.set(-6.8 - Math.random() * 3.5, 0.4, zOffset);
       treeL.rotation.y = Math.random() * Math.PI * 2;
       chunkGroup.add(treeL);
 
       // Right Kapok Tree
       const treeR = this.assets.createKapokTree(14 + Math.random() * 4, 1.4 + Math.random() * 0.4);
-      treeR.position.set(6.5 + Math.random() * 3.5, 0, zOffset);
+      treeR.position.set(6.8 + Math.random() * 3.5, 0.4, zOffset);
       treeR.rotation.y = Math.random() * Math.PI * 2;
       chunkGroup.add(treeR);
 
@@ -358,7 +419,11 @@ export class JungleWorld {
     this.activeObstacles = [];
     this.activeCollectibles = [];
     this.activeHazards = [];
-    if (this.groundMaterial.map) this.groundMaterial.map.dispose();
+    if (this.groundTexture) this.groundTexture.dispose();
+    if (this.groundBumpTexture) this.groundBumpTexture.dispose();
     this.groundMaterial.dispose();
+    if (this.assets && typeof this.assets.destroy === 'function') {
+      this.assets.destroy();
+    }
   }
 }

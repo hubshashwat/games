@@ -44,7 +44,93 @@ export class Cat {
   }
 
   /**
-   * Generates procedural fur coat textures with rosettes, stripes, or panther sleekness
+   * Generates procedural anisotropic fur micro-normal/bump texture
+   */
+  createFurBumpMap() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+
+    // Neutral grey bump baseline
+    ctx.fillStyle = '#808080';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Fine directional fur strand micro-grooves
+    ctx.strokeStyle = '#999999';
+    ctx.lineWidth = 1.2;
+    for (let i = 0; i < 4500; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const len = 6 + Math.random() * 12;
+      const angle = (Math.random() - 0.5) * 0.4; // aligned with body Z flow
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.sin(angle) * len, y + Math.cos(angle) * len);
+      ctx.stroke();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 4);
+    return texture;
+  }
+
+  /**
+   * Creates a photorealistic feline eye texture with vertical slit pupil & iridescent iris
+   */
+  createEyeTexture(eyeHex) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Dark limbal ring border
+    ctx.fillStyle = '#080808';
+    ctx.beginPath();
+    ctx.arc(128, 128, 120, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Radiant iris gradient
+    const irisGrad = ctx.createRadialGradient(128, 128, 20, 128, 128, 116);
+    const colorStr = '#' + eyeHex.toString(16).padStart(6, '0');
+    irisGrad.addColorStop(0.0, colorStr);
+    irisGrad.addColorStop(0.7, colorStr);
+    irisGrad.addColorStop(1.0, '#111812');
+    ctx.fillStyle = irisGrad;
+    ctx.beginPath();
+    ctx.arc(128, 128, 114, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Iris fiber striations
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.lineWidth = 1.5;
+    for (let a = 0; a < Math.PI * 2; a += 0.1) {
+      ctx.beginPath();
+      ctx.moveTo(128 + Math.cos(a) * 35, 128 + Math.sin(a) * 35);
+      ctx.lineTo(128 + Math.cos(a) * 110, 128 + Math.sin(a) * 110);
+      ctx.stroke();
+    }
+
+    // Predatory vertical slit pupil
+    ctx.fillStyle = '#020202';
+    ctx.beginPath();
+    ctx.ellipse(128, 128, 16, 96, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Specular cornea reflection glint
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.beginPath();
+    ctx.arc(146, 92, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+  }
+
+  /**
+   * Generates procedural fur coat textures with multi-lobed rosettes, stripes, or panther sleekness
    */
   createCoatTexture(skinConfig) {
     const canvas = document.createElement('canvas');
@@ -52,68 +138,82 @@ export class Cat {
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Base coat gradient
+    // Base coat gradient with spine-to-belly contrast
     const grad = ctx.createLinearGradient(0, 0, 0, 512);
     const primHex = '#' + skinConfig.primaryColor.toString(16).padStart(6, '0');
     const bellyHex = '#' + skinConfig.bellyColor.toString(16).padStart(6, '0');
-    grad.addColorStop(0, primHex);
-    grad.addColorStop(0.7, primHex);
-    grad.addColorStop(1.0, bellyHex);
+    grad.addColorStop(0.0, primHex);
+    grad.addColorStop(0.65, primHex);
+    grad.addColorStop(0.95, bellyHex);
+    grad.addColorStop(1.0, '#ffffff');
 
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
-    // Add fine fur fiber noise
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-    for (let i = 0; i < 4000; i++) {
+    // Microscopic fur grain stippling
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    for (let i = 0; i < 5000; i++) {
       const rx = Math.random() * 512;
       const ry = Math.random() * 512;
-      ctx.fillRect(rx, ry, 2, 4);
+      ctx.fillRect(rx, ry, 1, 3);
     }
 
-    // Pattern markings (Rosettes or Stripes)
+    // Pattern markings (Authentic Multi-Lobed Rosettes or Tiger Stripes)
     const spotHex = '#' + skinConfig.spotColor.toString(16).padStart(6, '0');
-    ctx.fillStyle = spotHex;
 
     if (skinConfig.id === 'leopard' || skinConfig.id === 'mystic') {
-      // Rosettes / irregular spots
-      for (let i = 0; i < 90; i++) {
+      // Authentic leopard rosettes: warm cinnamon core encircled by dark espresso broken lobes
+      for (let i = 0; i < 95; i++) {
         const cx = Math.random() * 512;
-        const cy = Math.random() * 380; // keep off belly
-        const r = 4 + Math.random() * 7;
-        ctx.beginPath();
-        // Broken rosette ring
-        ctx.arc(cx, cy, r, 0, Math.PI * 1.6);
-        ctx.lineWidth = 2 + Math.random() * 2.5;
-        ctx.strokeStyle = spotHex;
-        ctx.stroke();
+        const cy = 30 + Math.random() * 380; // keep off ventral belly
+        const r = 5 + Math.random() * 9;
 
-        // Small central dot
-        if (Math.random() > 0.4) {
+        // Warm ochre interior core
+        ctx.fillStyle = (skinConfig.id === 'leopard') ? 'rgba(160, 90, 25, 0.65)' : 'rgba(40, 110, 130, 0.5)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 3 to 5 dark petal lobes encircling the core
+        const numLobes = 3 + Math.floor(Math.random() * 3);
+        ctx.fillStyle = spotHex;
+        for (let l = 0; l < numLobes; l++) {
+          const lAngle = (l / numLobes) * Math.PI * 2 + Math.random() * 0.4;
+          const lx = cx + Math.cos(lAngle) * r;
+          const ly = cy + Math.sin(lAngle) * r;
           ctx.beginPath();
-          ctx.arc(cx + 1, cy + 1, r * 0.35, 0, Math.PI * 2);
+          ctx.arc(lx, ly, 2 + Math.random() * 2.2, 0, Math.PI * 2);
           ctx.fill();
         }
       }
     } else if (skinConfig.id === 'tiger') {
-      // Bold wild tiger stripes
+      // Tapered wild tiger stripes with organic curvature
       ctx.strokeStyle = spotHex;
-      for (let i = 0; i < 30; i++) {
-        const sy = 40 + i * 14;
+      for (let i = 0; i < 36; i++) {
+        const sy = 35 + i * 13;
         ctx.beginPath();
         ctx.moveTo(0, sy);
-        ctx.bezierCurveTo(120, sy + 15, 240, sy - 15, 360, sy + 10);
-        ctx.lineWidth = 4 + Math.random() * 4;
+        ctx.bezierCurveTo(100, sy + 18, 220, sy - 18, 360, sy + 12);
+        ctx.lineWidth = 3.5 + Math.random() * 4.5;
         ctx.stroke();
+
+        // Tapered branch stripe
+        if (Math.random() > 0.5) {
+          ctx.beginPath();
+          ctx.moveTo(180, sy);
+          ctx.lineTo(260, sy + 22);
+          ctx.lineWidth = 2.5 + Math.random() * 2;
+          ctx.stroke();
+        }
       }
     } else if (skinConfig.id === 'panther') {
-      // Subtle ghost rosettes visible only under specular highlights
-      ctx.fillStyle = 'rgba(10, 10, 12, 0.6)';
-      for (let i = 0; i < 60; i++) {
+      // Midnight satin coat with subtle obsidian rosettes visible under specular light
+      ctx.fillStyle = 'rgba(6, 7, 9, 0.75)';
+      for (let i = 0; i < 75; i++) {
         const cx = Math.random() * 512;
-        const cy = Math.random() * 380;
+        const cy = 20 + Math.random() * 400;
         ctx.beginPath();
-        ctx.arc(cx, cy, 5 + Math.random() * 5, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 6 + Math.random() * 6, 0, Math.PI * 2);
         ctx.fill();
       }
     }
@@ -126,29 +226,56 @@ export class Cat {
 
   buildCatModel() {
     const coatTexture = this.createCoatTexture(this.skinConfig);
+    this.furBumpTexture = this.createFurBumpMap();
+    const eyeTexture = this.createEyeTexture(this.skinConfig.eyeColor);
 
-    // Primary fur material
-    this.coatMaterial = new THREE.MeshStandardMaterial({
+    // Ultra-Realistic PBR Feline Fur Material (MeshPhysicalMaterial with Sheen & Micro-Normals)
+    this.coatMaterial = new THREE.MeshPhysicalMaterial({
       map: coatTexture,
-      roughness: 0.62,
-      metalness: 0.08,
+      bumpMap: this.furBumpTexture,
+      bumpScale: 0.035,
+      roughness: 0.58,
+      metalness: 0.03,
+      sheen: 0.95,
+      sheenColor: new THREE.Color(0xf6d89e),
+      sheenRoughness: 0.38,
+      clearcoat: 0.08,
+      clearcoatRoughness: 0.5,
       shadowSide: THREE.DoubleSide
     });
 
-    // Dark accents material (nose, pads)
-    this.noseMaterial = new THREE.MeshStandardMaterial({
+    // Dark leather accents material with wet specular sheen (nose, paw pads)
+    this.noseMaterial = new THREE.MeshPhysicalMaterial({
       color: this.skinConfig.noseColor,
-      roughness: 0.3,
-      metalness: 0.1
+      roughness: 0.22,
+      metalness: 0.05,
+      clearcoat: 0.85,
+      clearcoatRoughness: 0.15
     });
 
-    // Menacing glowing predatory feline eyes
-    this.eyeMaterial = new THREE.MeshStandardMaterial({
-      color: this.skinConfig.eyeColor,
+    // Realistic predatory feline eyes with glass cornea & vertical slit
+    this.eyeMaterial = new THREE.MeshPhysicalMaterial({
+      map: eyeTexture,
+      roughness: 0.04,
+      metalness: 0.08,
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.04,
       emissive: this.skinConfig.eyeColor,
-      emissiveIntensity: 0.65,
-      roughness: 0.1,
-      metalness: 0.1
+      emissiveIntensity: 0.25
+    });
+
+    // Whiskers material
+    this.whiskerMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.75
+    });
+
+    // Ear interior soft fur material
+    this.innerEarMaterial = new THREE.MeshStandardMaterial({
+      color: 0xf5cfc5,
+      roughness: 0.85,
+      metalness: 0.0
     });
 
     // 1. Root body pivot
@@ -210,6 +337,19 @@ export class Cat {
     nose.position.set(0, -0.02, 0.22);
     this.headGroup.add(nose);
 
+    // Realistic Feline Whiskers (3 flexible strands per cheek)
+    const whiskerGeo = new THREE.CylinderGeometry(0.0015, 0.0008, 0.18, 3);
+    whiskerGeo.rotateZ(Math.PI / 2);
+    for (let side = -1; side <= 1; side += 2) {
+      for (let w = 0; w < 3; w++) {
+        const whisker = new THREE.Mesh(whiskerGeo, this.whiskerMaterial);
+        whisker.position.set(side * 0.10, -0.05 + (w - 1) * 0.022, 0.16);
+        whisker.rotation.y = side * (0.28 + w * 0.12);
+        whisker.rotation.z = side * (0.08 - w * 0.14);
+        this.headGroup.add(whisker);
+      }
+    }
+
     // Alert Feline Triangular Ears
     const earGeo = new THREE.ConeGeometry(0.085, 0.16, 4);
     earGeo.rotateY(Math.PI / 4);
@@ -220,11 +360,22 @@ export class Cat {
     this.earL.rotation.x = -0.15;
     this.headGroup.add(this.earL);
 
+    // Inner ear pinkish fur tuft
+    const innerEarGeo = new THREE.ConeGeometry(0.055, 0.11, 3);
+    innerEarGeo.rotateY(Math.PI / 4);
+    const innerEarL = new THREE.Mesh(innerEarGeo, this.innerEarMaterial);
+    innerEarL.position.set(0, -0.01, 0.02);
+    this.earL.add(innerEarL);
+
     this.earR = new THREE.Mesh(earGeo, this.coatMaterial);
     this.earR.position.set(-0.11, 0.18, 0.02);
     this.earR.rotation.z = 0.3;
     this.earR.rotation.x = -0.15;
     this.headGroup.add(this.earR);
+
+    const innerEarR = new THREE.Mesh(innerEarGeo, this.innerEarMaterial);
+    innerEarR.position.set(0, -0.01, 0.02);
+    this.earR.add(innerEarR);
 
     // Reflective Slit Eyes
     const eyeGeo = new THREE.SphereGeometry(0.042, 8, 8);
@@ -320,6 +471,12 @@ export class Cat {
     paw.castShadow = true;
     joint.add(paw);
 
+    // Dark leathery paw pad on sole
+    const padGeo = new THREE.BoxGeometry(0.075, 0.015, 0.09);
+    const pad = new THREE.Mesh(padGeo, this.noseMaterial);
+    pad.position.set(0, -lowerLen - 0.02, 0.03);
+    joint.add(pad);
+
     return {
       root: limbGroup,
       joint: joint,
@@ -341,8 +498,11 @@ export class Cat {
     this.coatMaterial.map = this.createCoatTexture(this.skinConfig);
     this.coatMaterial.needsUpdate = true;
 
-    this.eyeMaterial.color.setHex(this.skinConfig.eyeColor);
+    if (this.eyeMaterial.map) this.eyeMaterial.map.dispose();
+    this.eyeMaterial.map = this.createEyeTexture(this.skinConfig.eyeColor);
     this.eyeMaterial.emissive.setHex(this.skinConfig.eyeColor);
+    this.eyeMaterial.needsUpdate = true;
+
     this.noseMaterial.color.setHex(this.skinConfig.noseColor);
   }
 
@@ -535,8 +695,12 @@ export class Cat {
     this.scene.remove(this.group);
     this.scene.remove(this.groundShadow);
     if (this.coatMaterial.map) this.coatMaterial.map.dispose();
+    if (this.furBumpTexture) this.furBumpTexture.dispose();
+    if (this.eyeMaterial.map) this.eyeMaterial.map.dispose();
     this.coatMaterial.dispose();
     this.eyeMaterial.dispose();
     this.noseMaterial.dispose();
+    if (this.whiskerMaterial) this.whiskerMaterial.dispose();
+    if (this.innerEarMaterial) this.innerEarMaterial.dispose();
   }
 }
