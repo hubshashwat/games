@@ -2,7 +2,7 @@
 
 An ultra-realistic 3D endless runner built with **Three.js**, **Web Audio API**, and modern responsive web design. 
 
-You are an agile feline galloping through a lush, atmospheric rainforest. Just meters behind you slithers a massive, terrifying prehistoric serpent. As long as you keep running, you keep accumulating points and meters. Jump over fallen mossy logs, duck beneath ancient ruin arches and hanging lianas, dodge dense brambles, avoid mud quagmires, and grab glowing tropical fruits!
+You are an agile feline galloping through a lush, atmospheric rainforest. Just meters behind you slithers a massive, terrifying prehistoric serpent. As long as you keep running, you keep accumulating points and meters. Jump over fallen mossy logs, duck beneath ancient ruin arches and hanging lianas, dodge dense brambles, avoid mud quagmires, and grab luminous Star Orchids and Ancient Relics!
 
 ---
 
