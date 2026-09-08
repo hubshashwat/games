@@ -170,7 +170,6 @@ async function runE2E() {
     console.log('\n--- 6. Desktop Suite: Snake Catch & Game Over Transition ---');
     // Force snake catch distance to test Game Over screen
     await desktopPage.evaluate(() => {
-      window.gameEngine.cat.isInvincible = false;
       window.gameEngine.snake.distance = 0.5;
       window.gameEngine.update(0.016);
     });

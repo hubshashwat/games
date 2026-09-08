@@ -58,11 +58,13 @@ console.log('\n--- Test Suite 3: Track Dimensions & Lane Geometry ---');
   assert(DIMENSIONS.SLIDE_HEIGHT < 0.5, 'Slide height clears low creepers');
 }
 
-console.log('\n--- Test Suite 4: Powerups & Mechanics ---');
+console.log('\n--- Test Suite 4: Realistic Rainforest Collectibles ---');
 {
-  assert(POWERUPS.SUN_BERRY.speedBoost > 1.0, 'Sun Berry provides speed boost');
-  assert(POWERUPS.SUN_BERRY.invincible === true, 'Sun Berry provides invincibility');
+  assert(POWERUPS.SUN_BERRY === undefined, 'Sun Berry powerup is removed');
+  assert(POWERUPS.STAR_ORCHID !== undefined, 'Rare Star Orchid is defined');
   assert(POWERUPS.STAR_ORCHID.scoreMultiplier === 3.0, 'Star Orchid awards 3x multiplier');
+  assert(POWERUPS.STAR_ORCHID.invincible === false, 'Star Orchid preserves lethal vulnerability');
+  assert(POWERUPS.RELIC !== undefined, 'Ancient Relic is defined');
   assert(POWERUPS.RELIC.bonusPoints === 500, 'Relic awards 500 bonus points');
   assert(POWERUPS.RELIC.pushSnakeBack > 0, 'Relic pushes snake backward');
 }
@@ -102,6 +104,28 @@ console.log('\n--- Test Suite 6: Lethal Collision & Obstacle Catch Logic ---');
   assert(fatalSnakeDist <= catchThreshold, 'Fatal strike distance (0.4m) is within catch threshold (1.2m)');
 }
 
+console.log('\n--- Test Suite 7: Camera & Lane Orientation Math (+Z View) ---');
+{
+  // Camera looks forward along +Z axis.
+  // In right-handed Three.js coordinates, looking along +Z:
+  // Screen-Left = +X world coordinate
+  // Screen-Right = -X world coordinate
+  const laneWidth = DIMENSIONS.LANE_WIDTH; // 2.2m
+  
+  const leftLaneIdx = -1;
+  const leftTargetX = -leftLaneIdx * laneWidth;
+  assert(leftTargetX > 0, `Left lane (-1) maps to positive world X (+${leftTargetX}m), appearing on screen-left`);
+
+  const rightLaneIdx = 1;
+  const rightTargetX = -rightLaneIdx * laneWidth;
+  assert(rightTargetX < 0, `Right lane (+1) maps to negative world X (${rightTargetX}m), appearing on screen-right`);
+
+  const centerLaneIdx = 0;
+  const centerTargetX = -centerLaneIdx * laneWidth;
+  assert(centerTargetX === 0, 'Center lane (0) maps to world X = 0');
+}
+
 console.log(`\nResults: ${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
+
 

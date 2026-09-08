@@ -41,7 +41,7 @@ export class GameEngine {
     this.distanceRan = 0;
     this.score = 0;
     this.highScore = this.loadHighScore();
-    this.berriesCollected = 0;
+    this.itemsCollected = 0;
 
     // Active powerup state
     this.activePowerup = null;
@@ -248,7 +248,7 @@ export class GameEngine {
     this.state = GAME_STATES.PLAYING;
     this.distanceRan = 0;
     this.score = 0;
-    this.berriesCollected = 0;
+    this.itemsCollected = 0;
     this.speed = this.currentMode.baseSpeed;
     this.initEntities();
   }
@@ -275,7 +275,6 @@ export class GameEngine {
 
   handleObstacleHit(type, obs) {
     if (this.state !== GAME_STATES.PLAYING) return;
-    if (this.cat.isInvincible) return;
 
     // Cat crashes heavily on obstacle
     this.audioManager.playStumble();
@@ -301,19 +300,8 @@ export class GameEngine {
   }
 
   handleCollectItem(type, item) {
-    if (type === 'sun_berry') {
-      this.berriesCollected++;
-      this.audioManager.playPickup('sun_berry');
-      this.score += 100 * this.currentMultiplier;
-
-      // Activate Sun Berry powerup: Speed boost & invincibility!
-      this.activePowerup = POWERUPS.SUN_BERRY;
-      this.powerupTimer = POWERUPS.SUN_BERRY.duration;
-      this.cat.setInvincible(POWERUPS.SUN_BERRY.duration);
-      this.snake.pushBack(2.5);
-
-      this.uiManager.showPowerup('SUN BERRY BOOST!', '⚡');
-    } else if (type === 'star_orchid') {
+    if (type === 'star_orchid') {
+      this.itemsCollected++;
       this.audioManager.playPickup('star_orchid');
       this.score += 150 * this.currentMultiplier;
 
@@ -321,6 +309,7 @@ export class GameEngine {
       this.powerupTimer = POWERUPS.STAR_ORCHID.duration;
       this.uiManager.showPowerup('STAR ORCHID (3X PTS)', '🌸');
     } else if (type === 'relic') {
+      this.itemsCollected++;
       this.audioManager.playPickup('relic');
       this.score += POWERUPS.RELIC.bonusPoints * this.currentMultiplier;
       this.snake.pushBack(POWERUPS.RELIC.pushSnakeBack);
@@ -342,7 +331,7 @@ export class GameEngine {
       this.distanceRan,
       this.score,
       this.highScore,
-      this.berriesCollected,
+      this.itemsCollected,
       isNewRecord
     );
   }
@@ -354,10 +343,7 @@ export class GameEngine {
 
     if (this.activePowerup) {
       this.powerupTimer -= dt;
-      if (this.activePowerup.type === 'sun_berry') {
-        activeSpeedMult = this.activePowerup.speedBoost;
-        this.particles.emitBoostSparks(this.cat.group.position, 2);
-      } else if (this.activePowerup.type === 'star_orchid') {
+      if (this.activePowerup.type === 'star_orchid') {
         this.currentMultiplier *= this.activePowerup.scoreMultiplier;
       }
 
@@ -402,14 +388,14 @@ export class GameEngine {
     }
 
     // Check if snake caught cat
-    if (this.snake.isCaught() && !this.cat.isInvincible) {
+    if (this.snake.isCaught()) {
       this.triggerGameOver();
       return;
     }
 
     // 6. World Chunk Streaming & Collision
     const catBounds = this.cat.getBounds();
-    this.world.update(this.cat.group.position.z, catBounds, this.cat.isInvincible);
+    this.world.update(this.cat.group.position.z, catBounds);
 
     // 7. Particles
     this.particles.update(dt, this.cat.group.position.z);

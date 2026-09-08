@@ -26,10 +26,6 @@ export class Cat {
     this.slideTimer = 0;
     this.slideDuration = DIMENSIONS.SLIDE_DURATION;
 
-    // Invulnerability / speed boost visual state
-    this.isInvincible = false;
-    this.invincibilityTimer = 0;
-
     // Gallop cycle parameters
     this.gallopPhase = 0;
     this.gallopFrequency = 9.0; // steps per second scaled with speed
@@ -352,7 +348,8 @@ export class Cat {
 
   setLane(laneIndex) {
     this.lane = Math.max(-1, Math.min(1, laneIndex));
-    this.targetX = this.lane * DIMENSIONS.LANE_WIDTH;
+    // Since camera looks forward along +Z, screen-left corresponds to +X and screen-right to -X
+    this.targetX = -this.lane * DIMENSIONS.LANE_WIDTH;
   }
 
   jump() {
@@ -377,19 +374,15 @@ export class Cat {
     return true;
   }
 
-  setInvincible(duration = 5.0) {
-    this.isInvincible = true;
-    this.invincibilityTimer = duration;
-  }
-
   update(dt, speed, worldCurvature = 0) {
     // 1. Smooth Lane Interpolation
     const dx = this.targetX - this.currentX;
     this.currentX += dx * Math.min(1.0, this.laneChangeSpeed * dt);
     this.group.position.x = this.currentX;
 
-    // Bank / tilt body during lane transition
-    const bankAngle = -dx * 0.18;
+    // Bank / tilt body into the turn
+    // Left turn (towards +X, dx > 0) rolls counter-clockwise; right turn (towards -X, dx < 0) rolls clockwise
+    const bankAngle = dx * 0.18;
     this.group.rotation.z = THREE.MathUtils.lerp(this.group.rotation.z, bankAngle, dt * 10);
     this.group.rotation.y = THREE.MathUtils.lerp(this.group.rotation.y, dx * 0.12, dt * 10);
 
@@ -439,19 +432,6 @@ export class Cat {
 
     // 5. Tail Physics (Sways and trails smoothly with inertia)
     this.animateTail(dt, speed);
-
-    // 6. Invincibility flicker
-    if (this.isInvincible) {
-      this.invincibilityTimer -= dt;
-      if (this.invincibilityTimer <= 0) {
-        this.isInvincible = false;
-        this.coatMaterial.opacity = 1.0;
-        this.coatMaterial.transparent = false;
-      } else {
-        this.coatMaterial.transparent = true;
-        this.coatMaterial.opacity = 0.5 + 0.5 * Math.sin(performance.now() * 0.02);
-      }
-    }
   }
 
   animateGallop(phase, dt, speed) {

@@ -87,13 +87,6 @@ export class EnvironmentAssets {
         roughness: 0.85,
         metalness: 0.05
       }),
-      sunBerry: new THREE.MeshStandardMaterial({
-        color: 0xffaa00,
-        emissive: 0xff7700,
-        emissiveIntensity: 0.85,
-        roughness: 0.2,
-        metalness: 0.1
-      }),
       starOrchid: new THREE.MeshStandardMaterial({
         color: 0x00f0ff,
         emissive: 0x0099cc,
@@ -369,46 +362,6 @@ export class EnvironmentAssets {
       subType: 'mud',
       width: width,
       length: length
-    };
-
-    return group;
-  }
-
-  /**
-   * COLLECTIBLE: Golden Sun Berry (Speed boost & invincibility)
-   */
-  createSunBerry() {
-    const group = new THREE.Group();
-
-    // Central golden sphere
-    const berryGeo = new THREE.SphereGeometry(0.28, 12, 10);
-    const berry = new THREE.Mesh(berryGeo, this.materials.sunBerry);
-    berry.castShadow = true;
-    group.add(berry);
-
-    // Little leaves at top
-    const capGeo = new THREE.ConeGeometry(0.14, 0.12, 5);
-    capGeo.rotateX(Math.PI);
-    const cap = new THREE.Mesh(capGeo, this.materials.leaves);
-    cap.position.y = 0.28;
-    group.add(cap);
-
-    // Subtle golden halo ring
-    const haloGeo = new THREE.TorusGeometry(0.38, 0.03, 6, 16);
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: 0xffe066,
-      transparent: true,
-      opacity: 0.6
-    });
-    const halo = new THREE.Mesh(haloGeo, haloMat);
-    halo.rotation.x = Math.PI / 2;
-    group.add(halo);
-
-    group.position.y = 1.1;
-    group.userData = {
-      type: 'collectible',
-      collectibleType: 'sun_berry',
-      radius: 0.45
     };
 
     return group;

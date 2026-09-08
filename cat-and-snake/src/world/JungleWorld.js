@@ -185,26 +185,12 @@ export class JungleWorld {
           log.position.set(0, 0, sectionZ);
           chunkGroup.add(log);
           obstacles.push(log);
-
-          // Place floating berries in an arc over the log
-          for (let i = -1; i <= 1; i++) {
-            const berry = this.assets.createSunBerry();
-            berry.position.set(i * DIMENSIONS.LANE_WIDTH, 2.2, sectionZ);
-            chunkGroup.add(berry);
-            collectibles.push(berry);
-          }
         } else if (obsTypeRoll < 0.62) {
           // Low Arch / Vines (SLIDE required)
           const arch = this.assets.createLowArch(DIMENSIONS.LANE_WIDTH * 3.2);
           arch.position.set(0, 0, sectionZ);
           chunkGroup.add(arch);
           obstacles.push(arch);
-
-          // Place low berry under the arch
-          const berry = this.assets.createSunBerry();
-          berry.position.set(0, 0.45, sectionZ);
-          chunkGroup.add(berry);
-          collectibles.push(berry);
         } else if (obsTypeRoll < 0.88) {
           // Bramble Clusters in 1 or 2 lanes (DODGE required)
           // Always ensure at least ONE lane is free!
@@ -245,19 +231,17 @@ export class JungleWorld {
           hazards.push(mud);
         }
       } else {
-        // Safe section: Place a string of bonus items
+        // Safe section: Place rare exotic Star Orchid
         const itemLane = Math.floor(Math.random() * 3);
-        for (let b = 0; b < 3; b++) {
-          const berry = this.assets.createSunBerry();
-          berry.position.set(lanes[itemLane], 1.1, sectionZ + b * 4.0);
-          chunkGroup.add(berry);
-          collectibles.push(berry);
-        }
+        const flower = this.assets.createStarOrchid();
+        flower.position.set(lanes[itemLane], 1.1, sectionZ);
+        chunkGroup.add(flower);
+        collectibles.push(flower);
       }
     }
   }
 
-  update(playerZ, catBounds, isInvincible = false) {
+  update(playerZ, catBounds) {
     // 1. Recycle chunks that fell far behind the player (behind snake)
     const recycleThreshold = playerZ - 35;
     while (this.chunks.length > 0 && this.chunks[0].zEnd < recycleThreshold) {
@@ -275,12 +259,12 @@ export class JungleWorld {
       this.spawnChunk(false);
     }
 
-    // 2. Animate hovering collectibles (spin & bob)
+    // 2. Floating animation for collectible flowers and relics
     const time = performance.now() * 0.003;
     for (let i = 0; i < this.activeCollectibles.length; i++) {
-      const item = this.activeCollectibles[i];
-      item.rotation.y = time * 2;
-      item.position.y = 1.0 + Math.sin(time * 3 + item.position.z) * 0.18;
+      const col = this.activeCollectibles[i];
+      col.rotation.y = time * 2.0;
+      col.position.y = 1.0 + Math.sin(time * 3.0 + col.position.z) * 0.18;
     }
 
     // 3. Collision Checks: Player vs Obstacles
@@ -305,7 +289,7 @@ export class JungleWorld {
         if (subType === 'jump') {
           // Jumpable log: If cat's Y is high enough, we clear it!
           if (catBounds.y < (obs.userData.height || 0.85)) {
-            if (!isInvincible && this.onHitObstacle) {
+            if (this.onHitObstacle) {
               obs.userData.hasHit = true;
               this.onHitObstacle('jump', obs);
             }
@@ -313,14 +297,14 @@ export class JungleWorld {
         } else if (subType === 'slide') {
           // Low arch: Cat must be sliding low!
           if (!catBounds.isSliding) {
-            if (!isInvincible && this.onHitObstacle) {
+            if (this.onHitObstacle) {
               obs.userData.hasHit = true;
               this.onHitObstacle('slide', obs);
             }
           }
         } else if (subType === 'dodge') {
           // Rock or Bramble in lane: collision!
-          if (!isInvincible && this.onHitObstacle) {
+          if (this.onHitObstacle) {
             obs.userData.hasHit = true;
             this.onHitObstacle('dodge', obs);
           }

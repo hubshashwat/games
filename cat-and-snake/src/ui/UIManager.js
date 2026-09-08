@@ -70,8 +70,8 @@ export class UIManager {
 
         <!-- Active Powerup Banner -->
         <div id="hud-powerup" class="hud-powerup-pill">
-          <span id="powerup-icon">⚡</span>
-          <span id="powerup-text">SUN BERRY BOOST</span>
+          <span id="powerup-icon">🌸</span>
+          <span id="powerup-text">ORCHID BLOOM</span>
         </div>
 
         <!-- Bottom Touch Buttons (Accessible on mobile/tablet) -->
@@ -210,7 +210,7 @@ export class UIManager {
               <div id="stat-gameover-high" class="stat-value">0</div>
             </div>
             <div class="stat-box">
-              <div class="stat-label">Berries Eaten</div>
+              <div class="stat-label">Orchids Found</div>
               <div id="stat-gameover-berries" class="stat-value">0</div>
             </div>
           </div>

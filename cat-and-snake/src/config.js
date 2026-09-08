@@ -113,27 +113,18 @@ export const DIMENSIONS = {
 };
 
 export const POWERUPS = {
-  SUN_BERRY: {
-    type: 'sun_berry',
-    name: 'Sun Berry',
-    duration: 5.0,
-    speedBoost: 1.45,
-    invincible: true,
-    scoreMultiplier: 2.0,
-    color: 0xffaa00
-  },
   STAR_ORCHID: {
     type: 'star_orchid',
     name: 'Star Orchid',
     duration: 8.0,
-    speedBoost: 1.1,
+    speedBoost: 1.0,
     invincible: false,
     scoreMultiplier: 3.0,
     color: 0x00ffcc
   },
   RELIC: {
     type: 'relic',
-    name: 'Golden Paw Relic',
+    name: 'Ancient Relic',
     bonusPoints: 500,
     pushSnakeBack: 2.5,
     color: 0xffd700
