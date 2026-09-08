@@ -4,7 +4,35 @@ A collection of web games built for high performance and realism across mobile, 
 
 ## 🚀 Live on GitHub Pages
 - **Games Portal**: `https://hubshashwat.github.io/games/`
+- **Cat & Snake: Jungle Escape**: `https://hubshashwat.github.io/games/cat-and-snake/`
 - **Strike! 3D Bowling**: `https://hubshashwat.github.io/games/bowling/`
+
+---
+
+## 🐆 Cat & Snake: Endless Jungle Escape (`/cat-and-snake`)
+An ultra-realistic 3D endless rainforest runner built with **Three.js** and **Web Audio API**. Flee as an agile cat through the jungle with a terrifying 45-segment giant serpent breathing down your neck!
+
+### Highlights
+- **Quadruped Cat Realism**:
+  - Authentic 4-beat rotary gallop stride animation with spine flex and bobbing ears.
+  - Multi-segment procedural spring/verlet physics tail.
+  - 4 customizable feline pelts (Jungle Leopard, Midnight Panther, Bengal Tiger, Clouded Spirit).
+  - Agile controls: Lane dodging (`A`/`D` or swipe), high leap over logs (`Space`/`W`), low crouch slide under stone arches and creepers (`S`/`Down`).
+- **Terrifying Giant Serpent**:
+  - 45 articulated vertebrae segments conforming to the cat's running trail.
+  - Emerald and charcoal diamond scale PBR textures with iridescent sheen.
+  - Sinusoidal lateral undulation wave matching running velocity.
+  - Hinged jaw opening to expose curved venomous fangs, glowing slit reptilian eyes, and flicking bifurcated tongue when lunging.
+  - Dynamic proximity danger system with screen-space vignette alert and tension heartbeat audio.
+- **Endless Procedural Rainforest**:
+  - Continuous chunk streaming with ancient Kapok trees, sprawling buttress roots, hanging lianas, ferns, and mossy fallen logs.
+  - Directional tropical sunlight with soft PCF shadows, canopy mist fog, and volumetric God rays.
+  - Dynamic particle system: sun dust motes, fireflies, paw dirt puffs, and boost sparks.
+- **100% Procedural Web Audio**:
+  - Synthetic gallop footsteps, spatial snake hisses, acceleration heartbeats, and ambient jungle soundscape (cicadas, wind, birds) with zero external asset dependencies.
+- **Tested Across Every Screen**:
+  - Adaptive vertical FOV (56°–85°) ensuring zero cropping on narrow mobile portrait phones, tablets, and 21:9 ultra-wide monitors.
+  - Native touch swipe gestures + ergonomic on-screen thumb buttons (Jump, Slide, Sprint, Pause).
 
 ---
 

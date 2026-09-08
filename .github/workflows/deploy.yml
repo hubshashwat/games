@@ -29,7 +29,9 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: 'bowling/package-lock.json'
+          cache-dependency-path: |
+            bowling/package-lock.json
+            cat-and-snake/package-lock.json
 
       - name: Install & Build Bowling
         run: |
@@ -37,11 +39,18 @@ jobs:
           npm ci
           npm run build
 
+      - name: Install & Build Cat and Snake
+        run: |
+          cd cat-and-snake
+          npm ci
+          npm run build
+
       - name: Assemble Static Site
         run: |
-          mkdir -p _site/bowling
+          mkdir -p _site/bowling _site/cat-and-snake
           cp index.html _site/
           cp -r bowling/dist/* _site/bowling/
+          cp -r cat-and-snake/dist/* _site/cat-and-snake/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
