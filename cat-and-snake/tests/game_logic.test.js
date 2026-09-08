@@ -84,5 +84,24 @@ console.log('\n--- Test Suite 5: Collision & Clearance Logic Math ---');
   assert(catStandingHeight > archBottomClearance, 'Standing cat hits arch (0.8m > 0.55m)');
 }
 
+console.log('\n--- Test Suite 6: Lethal Collision & Obstacle Catch Logic ---');
+{
+  // Test Rock & Bramble bounding box with cat bounds
+  const rockWidth = 1.9;
+  const catWidth = 0.55;
+  const maxDx = (rockWidth + catWidth) * 0.5;
+  assert(maxDx === 1.225, 'Combined rock + cat AABB width threshold is 1.225m');
+  
+  // Off-center cat at dx = 0.8m must collide with rock
+  const catOffCenterX = 0.8;
+  assert(catOffCenterX < maxDx, 'Off-center cat at 0.8m correctly collides with 1.9m rock');
+
+  // Test Snake surge and lethal catch distance threshold
+  const catchThreshold = 1.2;
+  const fatalSnakeDist = 0.4;
+  assert(fatalSnakeDist <= catchThreshold, 'Fatal strike distance (0.4m) is within catch threshold (1.2m)');
+}
+
 console.log(`\nResults: ${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
+

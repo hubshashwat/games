@@ -187,6 +187,14 @@ async function runE2E() {
     const isRestarted = await desktopPage.evaluate(() => window.gameEngine.state === 'playing');
     assert(isRestarted, 'Run Again button restarts gameplay immediately');
 
+    // Test that colliding with an obstacle (rock/bramble/arch) causes immediate fatal death
+    await desktopPage.evaluate(() => {
+      window.gameEngine.handleObstacleHit('dodge', { userData: { subType: 'dodge' } });
+    });
+    await new Promise(r => setTimeout(r, 400));
+    const obstacleKilled = await desktopPage.evaluate(() => window.gameEngine.state === 'game_over');
+    assert(obstacleKilled, 'Crashing into rock/obstacle triggers immediate fatal Game Over');
+
     await desktopPage.close();
 
     // =========================================================

@@ -319,6 +319,39 @@ export class EnvironmentAssets {
   }
 
   /**
+   * OBSTACLE 3B: Ancient Jungle Boulder / Rock (Requires LANE DODGE)
+   */
+  createRockObstacle(width = 1.9) {
+    const group = new THREE.Group();
+
+    // Jagged mossy boulder
+    const rockGeo = new THREE.DodecahedronGeometry(width * 0.55, 1);
+    rockGeo.scale(1.0, 0.9, 0.85);
+    const rock = new THREE.Mesh(rockGeo, this.materials.stone);
+    rock.position.y = width * 0.45;
+    rock.castShadow = true;
+    rock.receiveShadow = true;
+    group.add(rock);
+
+    // Moss layer on top
+    const mossGeo = new THREE.SphereGeometry(width * 0.35, 6, 6);
+    mossGeo.scale(1.2, 0.4, 1.1);
+    const moss = new THREE.Mesh(mossGeo, this.materials.leaves);
+    moss.position.set(0, width * 0.75, 0);
+    group.add(moss);
+
+    group.userData = {
+      type: 'obstacle',
+      subType: 'dodge',
+      height: width * 0.9,
+      width: width,
+      depth: 1.2
+    };
+
+    return group;
+  }
+
+  /**
    * OBSTACLE 4: Mud Quagmire / Deep Swamp Pool (Slows cat, lets snake close in!)
    */
   createMudPuddle(width = 2.4, length = 4.0) {

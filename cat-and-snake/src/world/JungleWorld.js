@@ -135,12 +135,12 @@ export class JungleWorld {
     if (!isFirstChunk) {
       this.populateChunkGameplay(chunkGroup, chunkZ, chunkObstacles, chunkCollectibles, chunkHazards);
     } else {
-      // Reward arc of sun berries on first chunk for immediate satisfaction
-      for (let b = 0; b < 4; b++) {
-        const berry = this.assets.createSunBerry();
-        berry.position.set(0, 1.0, 20 + b * 5);
-        chunkGroup.add(berry);
-        chunkCollectibles.push(berry);
+      // Gentle start: place standard score orchids (no automatic invincibility on starting line)
+      for (let b = 0; b < 2; b++) {
+        const flower = this.assets.createStarOrchid();
+        flower.position.set(0, 1.1, 28 + b * 12);
+        chunkGroup.add(flower);
+        chunkCollectibles.push(flower);
       }
     }
 
@@ -219,10 +219,13 @@ export class JungleWorld {
           }
 
           blockedLanes.forEach(lIdx => {
-            const bramble = this.assets.createBrambleObstacle(DIMENSIONS.LANE_WIDTH * 0.95);
-            bramble.position.set(lanes[lIdx], 0, sectionZ);
-            chunkGroup.add(bramble);
-            obstacles.push(bramble);
+            // Alternate between mossy jungle boulders/rocks and thorny brambles
+            const obstacleObj = (Math.random() > 0.45)
+              ? this.assets.createRockObstacle(DIMENSIONS.LANE_WIDTH * 0.95)
+              : this.assets.createBrambleObstacle(DIMENSIONS.LANE_WIDTH * 0.95);
+            obstacleObj.position.set(lanes[lIdx], 0, sectionZ);
+            chunkGroup.add(obstacleObj);
+            obstacles.push(obstacleObj);
           });
 
           // Place reward in the open lane
@@ -283,37 +286,43 @@ export class JungleWorld {
     // 3. Collision Checks: Player vs Obstacles
     for (let i = this.activeObstacles.length - 1; i >= 0; i--) {
       const obs = this.activeObstacles[i];
+      if (obs.userData.hasHit) continue; // Already processed collision
+
       const worldPos = new THREE.Vector3();
       obs.getWorldPosition(worldPos);
 
       const dz = Math.abs(worldPos.z - catBounds.z);
       const dx = Math.abs(worldPos.x - catBounds.x);
 
-      // Nearby in Z
-      if (dz < (obs.userData.depth || 1.2) / 2 + catBounds.length / 2) {
-        if (dx < (obs.userData.width || 2.0) / 2) {
-          // Detailed height / state collision
-          const subType = obs.userData.subType;
+      const maxDz = ((obs.userData.depth || 1.2) + catBounds.length) * 0.5;
+      const maxDx = ((obs.userData.width || 2.0) + catBounds.width) * 0.5;
 
-          if (subType === 'jump') {
-            // Jumpable log: If cat's Y is high enough, we clear it!
-            if (catBounds.y < (obs.userData.height || 0.85)) {
-              if (!isInvincible && this.onHitObstacle) {
-                this.onHitObstacle('jump', obs);
-              }
-            }
-          } else if (subType === 'slide') {
-            // Low arch: Cat must be sliding low!
-            if (!catBounds.isSliding) {
-              if (!isInvincible && this.onHitObstacle) {
-                this.onHitObstacle('slide', obs);
-              }
-            }
-          } else if (subType === 'dodge') {
-            // Bramble in lane: collision!
+      // Accurate 3D AABB bounding check
+      if (dz < maxDz && dx < maxDx) {
+        // Detailed height / state collision
+        const subType = obs.userData.subType;
+
+        if (subType === 'jump') {
+          // Jumpable log: If cat's Y is high enough, we clear it!
+          if (catBounds.y < (obs.userData.height || 0.85)) {
             if (!isInvincible && this.onHitObstacle) {
-              this.onHitObstacle('dodge', obs);
+              obs.userData.hasHit = true;
+              this.onHitObstacle('jump', obs);
             }
+          }
+        } else if (subType === 'slide') {
+          // Low arch: Cat must be sliding low!
+          if (!catBounds.isSliding) {
+            if (!isInvincible && this.onHitObstacle) {
+              obs.userData.hasHit = true;
+              this.onHitObstacle('slide', obs);
+            }
+          }
+        } else if (subType === 'dodge') {
+          // Rock or Bramble in lane: collision!
+          if (!isInvincible && this.onHitObstacle) {
+            obs.userData.hasHit = true;
+            this.onHitObstacle('dodge', obs);
           }
         }
       }

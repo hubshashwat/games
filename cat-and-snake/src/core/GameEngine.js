@@ -274,20 +274,21 @@ export class GameEngine {
   }
 
   handleObstacleHit(type, obs) {
-    // Cat stumbles on obstacle
+    if (this.state !== GAME_STATES.PLAYING) return;
+    if (this.cat.isInvincible) return;
+
+    // Cat crashes heavily on obstacle
     this.audioManager.playStumble();
-    this.sceneManager.triggerCameraShake(0.55);
+    this.sceneManager.triggerCameraShake(0.85);
 
-    // Speed temporarily dips
-    this.speed = Math.max(this.currentMode.baseSpeed * 0.7, this.speed - 6.0);
+    // Fatal impact: The giant serpent immediately strikes and catches the cat!
+    this.snake.distance = 0.4;
+    this.snake.targetDistance = 0.4;
+    this.snake.isLunging = true;
+    this.speed = 0;
 
-    // Snake lunges closer!
-    this.snake.surgeForward(3.2 * this.currentMode.snakeAggression);
-
-    // Check if snake immediately caught cat
-    if (this.snake.isCaught()) {
-      this.triggerGameOver();
-    }
+    // Immediately trigger game over
+    this.triggerGameOver();
   }
 
   handleHazard(hazardType) {

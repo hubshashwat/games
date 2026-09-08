@@ -253,7 +253,8 @@ export class Snake {
   }
 
   surgeForward(meters = 2.0) {
-    this.targetDistance = Math.max(1.2, this.targetDistance - meters);
+    this.targetDistance = Math.max(0.4, this.targetDistance - meters);
+    this.distance = Math.max(0.4, this.distance - meters);
   }
 
   recordPathPoint(catPosition) {
